@@ -2,6 +2,7 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -83,10 +84,18 @@ public class MinimaxAlphaBeta extends Agent {
 		if (isMaxTurn) {
 			double val = Double.MIN_VALUE;
 
-			// for (GameStateChild : node.)
+			for (GameStateChild child : getChildren(node)) {
+
+			}
 		}
 
 		return node;
+	}
+
+	private List<GameStateChild> getChildren(GameStateChild node) {
+		ArrayList<GameStateChild> childrenNodes = new ArrayList<GameStateChild>();
+
+		return childrenNodes;
 	}
 
 	/**
