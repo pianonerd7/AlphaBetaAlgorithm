@@ -33,11 +33,6 @@ public class Utility {
 		}
 	}
 
-	public static double estimateHeuristic(GameStateChild node) {
-
-		return 0;
-	}
-
 	private List<MapLocation> getSources(GameStateChild node) {
 
 		List<Integer> resourceIDs = node.state.stateView.getAllResourceIds();
