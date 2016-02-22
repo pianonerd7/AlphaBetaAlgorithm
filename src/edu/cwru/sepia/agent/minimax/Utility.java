@@ -40,10 +40,10 @@ public class Utility {
 
 	private List<MapLocation> getSources(GameStateChild node) {
 
-		List<Integer> resourceIDs = node.state.state.getAllResourceIds();
+		List<Integer> resourceIDs = node.state.stateView.getAllResourceIds();
 		List<MapLocation> resourceLocations = new ArrayList<MapLocation>();
 		for (Integer resourceID : resourceIDs) {
-			ResourceNode.ResourceView resource = node.state.state.getResourceNode(resourceID);
+			ResourceNode.ResourceView resource = node.state.stateView.getResourceNode(resourceID);
 
 			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition(), null, 0));
 		}

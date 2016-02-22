@@ -81,15 +81,44 @@ public class MinimaxAlphaBeta extends Agent {
 			return node;
 		}
 
+		GameStateChild bestNode = null;
+		double val;
+
 		if (isMaxTurn) {
-			double val = Double.MIN_VALUE;
+			val = Double.MIN_VALUE;
 
 			for (GameStateChild child : getChildren(node)) {
 
+				if (child.state.getUtility() > val) {
+					val = child.state.getUtility();
+					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
+				}
+
+				alpha = Math.max(alpha, val);
+
+				if (beta <= alpha) {
+					break;
+				}
+			}
+		} else {
+			val = Double.MAX_VALUE;
+
+			for (GameStateChild child : getChildren(node)) {
+
+				if (child.state.getUtility() < val) {
+					val = child.state.getUtility();
+					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
+				}
+
+				beta = Math.min(beta, val);
+
+				if (beta <= alpha) {
+					break;
+				}
 			}
 		}
 
-		return node;
+		return bestNode;
 	}
 
 	private List<GameStateChild> getChildren(GameStateChild node) {

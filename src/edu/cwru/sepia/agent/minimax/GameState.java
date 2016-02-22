@@ -14,7 +14,7 @@ import edu.cwru.sepia.environment.model.state.State;
  */
 public class GameState {
 
-	public State.StateView state;
+	public State.StateView stateView;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -40,7 +40,7 @@ public class GameState {
 	 *            Current state of the episode
 	 */
 	public GameState(State.StateView state) {
-		this.state = state;
+		this.stateView = state;
 	}
 
 	/**
