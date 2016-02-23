@@ -17,29 +17,18 @@ import edu.cwru.sepia.environment.model.state.Unit;
  */
 public class GameState {
 
-	class MapLocation implements Comparable<MapLocation> {
+	class MapLocation {
 		public int x;
 		public int y;
-		public int heuristicCost = 0;
-		public int functionCost = 0;
-		public int nodeCost = 0;
-		public MapLocation cameFrom;
 
-		public MapLocation(int x, int y, MapLocation cameFrom, float cost) {
+		public MapLocation(int x, int y) {
 			this.x = x;
 			this.y = y;
-			this.nodeCost = (cameFrom == null) ? (int) cost : cameFrom.nodeCost + (int) cost;
-		}
-
-		@Override
-		public int compareTo(MapLocation otherMapLocation) {
-			return this.functionCost - otherMapLocation.functionCost;
 		}
 
 		@Override
 		public String toString() {
-			return "x: " + x + ", y: " + y + ", f: " + functionCost + ", heuristic: " + heuristicCost + ", nodecost: "
-					+ nodeCost;
+			return "x: " + x + ", y: " + y;
 		}
 	}
 
@@ -80,7 +69,7 @@ public class GameState {
 
 	}
 
-	private void getPlayers() {
+	private void populatePlayers() {
 
 		for (Unit.UnitView unit : stateView.getAllUnits()) {
 			if (unit.getTemplateView().getName().equals("Archer")) {
@@ -92,17 +81,80 @@ public class GameState {
 		}
 	}
 
-	private List<MapLocation> getResources(GameStateChild node) {
+	private List<MapLocation> getResources() {
 
-		List<Integer> resourceIDs = node.state.stateView.getAllResourceIds();
+		List<Integer> resourceIDs = stateView.getAllResourceIds();
 		List<MapLocation> resourceLocations = new ArrayList<MapLocation>();
 		for (Integer resourceID : resourceIDs) {
-			ResourceNode.ResourceView resource = node.state.stateView.getResourceNode(resourceID);
+			ResourceNode.ResourceView resource = stateView.getResourceNode(resourceID);
 
-			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition(), null, 0));
+			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition()));
 		}
 
 		return resourceLocations;
+	}
+
+	private List<MapLocation> getFootmenMapLocation() {
+
+		List<MapLocation> footmenLocation = new ArrayList<MapLocation>();
+
+		for (Unit.UnitView footman : footmen) {
+			footmenLocation.add(getMapLocation(footman));
+		}
+
+		return footmenLocation;
+	}
+
+	private List<MapLocation> getArcherMapLocation() {
+
+		List<MapLocation> archerLocation = new ArrayList<MapLocation>();
+
+		for (Unit.UnitView archer : archers) {
+			archerLocation.add(getMapLocation(archer));
+		}
+
+		return archerLocation;
+	}
+
+	private MapLocation getMapLocation(Unit.UnitView player) {
+		return new MapLocation(player.getXPosition(), player.getYPosition());
+	}
+
+	private List<MapLocation> getLegalLocations(Unit.UnitView player) {
+
+		List<MapLocation> neighbors = new ArrayList<MapLocation>();
+		MapLocation playerLocation = getMapLocation(player);
+
+		int x = playerLocation.x;
+		int y = playerLocation.y;
+
+		neighbors.add(new MapLocation(x - 1, y - 1));
+		neighbors.add(new MapLocation(x, y - 1));
+		neighbors.add(new MapLocation(x + 1, y - 1));
+		neighbors.add(new MapLocation(x - 1, y));
+		neighbors.add(new MapLocation(x + 1, y));
+		neighbors.add(new MapLocation(x - 1, y + 1));
+		neighbors.add(new MapLocation(x, y + 1));
+		neighbors.add(new MapLocation(x + 1, y + 1));
+
+		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
+			if (potentialNeighbor.x > xExtent || potentialNeighbor.x < 0 || potentialNeighbor.y > yExtent
+					|| potentialNeighbor.y < 0) {
+				neighbors.remove(potentialNeighbor);
+			}
+			for (MapLocation resource : getResources()) {
+				if (resource.x == potentialNeighbor.x && resource.y == potentialNeighbor.y) {
+					neighbors.remove(potentialNeighbor);
+				}
+			}
+
+			if (enemyFootmanLoc != null && !deleted && enemyFootmanLoc.x == potentialNeighbor.x
+					&& enemyFootmanLoc.y == potentialNeighbor.y) {
+				neighbors.remove(potentialNeighbor);
+			}
+		}
+
+		return neighbors;
 	}
 
 	/**

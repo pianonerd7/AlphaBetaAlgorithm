@@ -86,7 +86,7 @@ public class MinimaxAlphaBeta extends Agent {
 		if (isMaxTurn) {
 			val = Double.MIN_VALUE;
 
-			for (GameStateChild child : getChildren(node)) {
+			for (GameStateChild child : node.state.getChildren()) {
 
 				if (child.state.getUtility() > val) {
 					val = child.state.getUtility();
@@ -102,7 +102,7 @@ public class MinimaxAlphaBeta extends Agent {
 		} else {
 			val = Double.MAX_VALUE;
 
-			for (GameStateChild child : getChildren(node)) {
+			for (GameStateChild child : node.state.getChildren()) {
 
 				if (child.state.getUtility() < val) {
 					val = child.state.getUtility();
