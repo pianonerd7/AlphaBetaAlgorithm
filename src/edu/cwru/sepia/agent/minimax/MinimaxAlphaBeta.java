@@ -2,7 +2,6 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import edu.cwru.sepia.environment.model.state.State;
 public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
-	private boolean isMaxTurn = false;
+	private boolean isMaxTurn = true;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);
@@ -118,13 +117,8 @@ public class MinimaxAlphaBeta extends Agent {
 			}
 		}
 
+		isMaxTurn = !isMaxTurn;
 		return bestNode;
-	}
-
-	private List<GameStateChild> getChildren(GameStateChild node) {
-		ArrayList<GameStateChild> childrenNodes = new ArrayList<GameStateChild>();
-
-		return childrenNodes;
 	}
 
 	/**

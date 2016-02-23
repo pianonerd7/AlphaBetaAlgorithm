@@ -33,7 +33,7 @@ public class Utility {
 		}
 	}
 
-	private List<MapLocation> getSources(GameStateChild node) {
+	private List<MapLocation> getResources(GameStateChild node) {
 
 		List<Integer> resourceIDs = node.state.stateView.getAllResourceIds();
 		List<MapLocation> resourceLocations = new ArrayList<MapLocation>();

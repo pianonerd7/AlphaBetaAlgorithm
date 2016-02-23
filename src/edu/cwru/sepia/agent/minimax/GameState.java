@@ -1,8 +1,10 @@
 package edu.cwru.sepia.agent.minimax;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.cwru.sepia.environment.model.state.State;
+import edu.cwru.sepia.environment.model.state.Unit;
 
 /**
  * This class stores all of the information the agent needs to know about the
@@ -15,6 +17,9 @@ import edu.cwru.sepia.environment.model.state.State;
 public class GameState {
 
 	public State.StateView stateView;
+	public int xExtent;
+	public int yExtent;
+	public List<Unit.UnitView> archers;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -41,6 +46,22 @@ public class GameState {
 	 */
 	public GameState(State.StateView state) {
 		this.stateView = state;
+
+		this.xExtent = state.getXExtent();
+		this.yExtent = state.getYExtent();
+
+	}
+
+	private void getArchers() {
+
+		ArrayList<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
+
+		for (Unit.UnitView unit : stateView.getAllUnits()) {
+			if (unit.getTemplateView().getName().equals("Archer")) {
+				archers.add(unit);
+			}
+		}
+		this.archers = archers;
 	}
 
 	/**
@@ -64,6 +85,7 @@ public class GameState {
 	 * @return The weighted linear combination of the features
 	 */
 	public double getUtility() {
+
 		return 0.0;
 	}
 
