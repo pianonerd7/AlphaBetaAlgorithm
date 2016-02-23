@@ -137,6 +137,8 @@ public class GameState {
 		neighbors.add(new MapLocation(x, y + 1));
 		neighbors.add(new MapLocation(x + 1, y + 1));
 
+		List<MapLocation> archerLocation = getArcherMapLocation();
+
 		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
 			if (potentialNeighbor.x > xExtent || potentialNeighbor.x < 0 || potentialNeighbor.y > yExtent
 					|| potentialNeighbor.y < 0) {
@@ -148,9 +150,10 @@ public class GameState {
 				}
 			}
 
-			if (enemyFootmanLoc != null && !deleted && enemyFootmanLoc.x == potentialNeighbor.x
-					&& enemyFootmanLoc.y == potentialNeighbor.y) {
-				neighbors.remove(potentialNeighbor);
+			for (MapLocation archerLoc : archerLocation) {
+				if (archerLoc.x == potentialNeighbor.x && archerLoc.y == potentialNeighbor.y) {
+					neighbors.remove(potentialNeighbor);
+				}
 			}
 		}
 
