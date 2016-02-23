@@ -1,6 +1,7 @@
 package edu.cwru.sepia.agent.minimax;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +69,7 @@ public class GameState {
 
 		this.xExtent = state.getXExtent();
 		this.yExtent = state.getYExtent();
-
+		populatePlayers();
 	}
 
 	private void populatePlayers() {
@@ -168,8 +169,29 @@ public class GameState {
 		return neighbors;
 	}
 
-	private Map<MapLocation, MapLocation> getMapLocationPairs() {
+	private Map<MapLocation, MapLocation> getPossibleChildrenPairs() {
 
+		HashMap<MapLocation, MapLocation> possibleChildren = new HashMap<MapLocation, MapLocation>();
+		List<MapLocation> player1 = null;
+		List<MapLocation> player2 = null;
+
+		if (isMaxTurn) {
+			player1 = getLegalLocations(footmen.get(0));
+			player2 = getLegalLocations(footmen.get(1));
+		} else {
+			player1 = getLegalLocations(archers.get(0));
+			player2 = getLegalLocations(archers.get(1));
+		}
+
+		for (int i = 0; i < player1.size(); i++) {
+			for (int j = 0; j < player2.size(); j++) {
+				if (!((player1.get(i).x == player2.get(j).x) && (player1.get(i).y == player2.get(j).y))) {
+					possibleChildren.put(player1.get(i), player2.get(j));
+				}
+			}
+		}
+
+		return possibleChildren;
 	}
 
 	/**
