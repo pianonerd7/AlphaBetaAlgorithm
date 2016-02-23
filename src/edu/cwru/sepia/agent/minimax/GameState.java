@@ -3,6 +3,7 @@ package edu.cwru.sepia.agent.minimax;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.cwru.sepia.environment.model.state.ResourceNode;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
 
@@ -16,10 +17,37 @@ import edu.cwru.sepia.environment.model.state.Unit;
  */
 public class GameState {
 
+	class MapLocation implements Comparable<MapLocation> {
+		public int x;
+		public int y;
+		public int heuristicCost = 0;
+		public int functionCost = 0;
+		public int nodeCost = 0;
+		public MapLocation cameFrom;
+
+		public MapLocation(int x, int y, MapLocation cameFrom, float cost) {
+			this.x = x;
+			this.y = y;
+			this.nodeCost = (cameFrom == null) ? (int) cost : cameFrom.nodeCost + (int) cost;
+		}
+
+		@Override
+		public int compareTo(MapLocation otherMapLocation) {
+			return this.functionCost - otherMapLocation.functionCost;
+		}
+
+		@Override
+		public String toString() {
+			return "x: " + x + ", y: " + y + ", f: " + functionCost + ", heuristic: " + heuristicCost + ", nodecost: "
+					+ nodeCost;
+		}
+	}
+
 	public State.StateView stateView;
 	public int xExtent;
 	public int yExtent;
 	public List<Unit.UnitView> archers;
+	public List<Unit.UnitView> footmen;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -52,16 +80,29 @@ public class GameState {
 
 	}
 
-	private void getArchers() {
-
-		ArrayList<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
+	private void getPlayers() {
 
 		for (Unit.UnitView unit : stateView.getAllUnits()) {
 			if (unit.getTemplateView().getName().equals("Archer")) {
-				archers.add(unit);
+				this.archers.add(unit);
+			}
+			if (unit.getTemplateView().getName().equals("Footman")) {
+				this.footmen.add(unit);
 			}
 		}
-		this.archers = archers;
+	}
+
+	private List<MapLocation> getResources(GameStateChild node) {
+
+		List<Integer> resourceIDs = node.state.stateView.getAllResourceIds();
+		List<MapLocation> resourceLocations = new ArrayList<MapLocation>();
+		for (Integer resourceID : resourceIDs) {
+			ResourceNode.ResourceView resource = node.state.stateView.getResourceNode(resourceID);
+
+			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition(), null, 0));
+		}
+
+		return resourceLocations;
 	}
 
 	/**
@@ -107,6 +148,9 @@ public class GameState {
 	 * @return All possible actions and their associated resulting game state
 	 */
 	public List<GameStateChild> getChildren() {
+
+		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
+
 		return null;
 	}
 }
