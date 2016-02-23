@@ -2,6 +2,7 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import edu.cwru.sepia.environment.model.state.ResourceNode;
 import edu.cwru.sepia.environment.model.state.State;
@@ -37,6 +38,7 @@ public class GameState {
 	public int yExtent;
 	public List<Unit.UnitView> archers;
 	public List<Unit.UnitView> footmen;
+	private boolean isMaxTurn = true;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -137,7 +139,13 @@ public class GameState {
 		neighbors.add(new MapLocation(x, y + 1));
 		neighbors.add(new MapLocation(x + 1, y + 1));
 
-		List<MapLocation> archerLocation = getArcherMapLocation();
+		List<MapLocation> enemyLocation = null;
+
+		if (isMaxTurn) {
+			enemyLocation = getArcherMapLocation();
+		} else {
+			enemyLocation = getFootmenMapLocation();
+		}
 
 		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
 			if (potentialNeighbor.x > xExtent || potentialNeighbor.x < 0 || potentialNeighbor.y > yExtent
@@ -150,7 +158,7 @@ public class GameState {
 				}
 			}
 
-			for (MapLocation archerLoc : archerLocation) {
+			for (MapLocation archerLoc : enemyLocation) {
 				if (archerLoc.x == potentialNeighbor.x && archerLoc.y == potentialNeighbor.y) {
 					neighbors.remove(potentialNeighbor);
 				}
@@ -158,6 +166,10 @@ public class GameState {
 		}
 
 		return neighbors;
+	}
+
+	private Map<MapLocation, MapLocation> getMapLocationPairs() {
+
 	}
 
 	/**
