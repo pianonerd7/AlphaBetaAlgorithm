@@ -1,9 +1,7 @@
 package edu.cwru.sepia.agent.minimax;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.environment.model.state.State;
@@ -70,15 +68,27 @@ public class GameState {
 		}
 	}
 
-	private Map<Action, Direction> getAction(Unit.UnitView unit) {
+	private List<Action> getAction(Unit.UnitView unit) {
 
-		Map<Action, Direction> actions = new HashMap<Action, Direction>();
+		List<Action> legalActions = new ArrayList<Action>();
 
 		for (Direction direction : Direction.values()) {
-			// if (direction.xComponent() == 0 || direction.yComponent())
+			if (direction.xComponent() == 0 || direction.yComponent() == 0) {
+				break;
+			}
+
+			if (isLocationValid(unit.getXPosition() + direction.xComponent(),
+					unit.getYPosition() + direction.yComponent())) {
+				legalActions.add(Action.createPrimitiveMove(unit.getID(), direction));
+			}
 		}
 
-		return actions;
+		return legalActions;
+	}
+
+	private boolean isLocationValid(int x, int y) {
+
+		return !(stateView.isUnitAt(x, y) && stateView.isResourceAt(x, y)) && stateView.inBounds(x, y);
 	}
 
 	/**
