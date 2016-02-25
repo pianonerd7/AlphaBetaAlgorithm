@@ -26,8 +26,8 @@ public class GameState {
 	public State.StateView stateView;
 	public int xExtent;
 	public int yExtent;
-	public List<Unit.UnitView> archers;
-	public List<Unit.UnitView> footmen;
+	public List<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
+	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -78,7 +78,7 @@ public class GameState {
 
 		for (Direction direction : Direction.values()) {
 			if (direction.xComponent() == 0 || direction.yComponent() == 0) {
-				break;
+				continue;
 			}
 
 			if (isLocationValid(unit.getXPosition() + direction.xComponent(),
@@ -186,7 +186,7 @@ public class GameState {
 	 */
 	public double getUtility() {
 
-		int min = Double.MIN_VALUE;
+		double min = Double.MIN_VALUE;
 
 		for (Unit.UnitView footman : footmen) {
 			for (Unit.UnitView archer : archers) {
