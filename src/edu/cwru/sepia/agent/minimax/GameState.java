@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.cwru.sepia.environment.model.state.ResourceNode;
+import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
+import edu.cwru.sepia.util.Direction;
 
 /**
  * This class stores all of the information the agent needs to know about the
@@ -18,21 +19,6 @@ import edu.cwru.sepia.environment.model.state.Unit;
  * delete or change the signatures of the provided methods.
  */
 public class GameState {
-
-	class MapLocation {
-		public int x;
-		public int y;
-
-		public MapLocation(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		@Override
-		public String toString() {
-			return "x: " + x + ", y: " + y;
-		}
-	}
 
 	public State.StateView stateView;
 	public int xExtent;
@@ -84,114 +70,15 @@ public class GameState {
 		}
 	}
 
-	private List<MapLocation> getResources() {
+	private Map<Action, Direction> getAction(Unit.UnitView unit) {
 
-		List<Integer> resourceIDs = stateView.getAllResourceIds();
-		List<MapLocation> resourceLocations = new ArrayList<MapLocation>();
-		for (Integer resourceID : resourceIDs) {
-			ResourceNode.ResourceView resource = stateView.getResourceNode(resourceID);
+		Map<Action, Direction> actions = new HashMap<Action, Direction>();
 
-			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition()));
+		for (Direction direction : Direction.values()) {
+			// if (direction.xComponent() == 0 || direction.yComponent())
 		}
 
-		return resourceLocations;
-	}
-
-	private List<MapLocation> getFootmenMapLocation() {
-
-		List<MapLocation> footmenLocation = new ArrayList<MapLocation>();
-
-		for (Unit.UnitView footman : footmen) {
-			footmenLocation.add(getMapLocation(footman));
-		}
-
-		return footmenLocation;
-	}
-
-	private List<MapLocation> getArcherMapLocation() {
-
-		List<MapLocation> archerLocation = new ArrayList<MapLocation>();
-
-		for (Unit.UnitView archer : archers) {
-			archerLocation.add(getMapLocation(archer));
-		}
-
-		return archerLocation;
-	}
-
-	private MapLocation getMapLocation(Unit.UnitView player) {
-		return new MapLocation(player.getXPosition(), player.getYPosition());
-	}
-
-	private List<MapLocation> getLegalLocations(Unit.UnitView player) {
-
-		List<MapLocation> neighbors = new ArrayList<MapLocation>();
-		MapLocation playerLocation = getMapLocation(player);
-
-		int x = playerLocation.x;
-		int y = playerLocation.y;
-
-		neighbors.add(new MapLocation(x - 1, y - 1));
-		neighbors.add(new MapLocation(x, y - 1));
-		neighbors.add(new MapLocation(x + 1, y - 1));
-		neighbors.add(new MapLocation(x - 1, y));
-		neighbors.add(new MapLocation(x + 1, y));
-		neighbors.add(new MapLocation(x - 1, y + 1));
-		neighbors.add(new MapLocation(x, y + 1));
-		neighbors.add(new MapLocation(x + 1, y + 1));
-
-		List<MapLocation> enemyLocation = null;
-
-		if (isMaxTurn) {
-			enemyLocation = getArcherMapLocation();
-		} else {
-			enemyLocation = getFootmenMapLocation();
-		}
-
-		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
-			if (potentialNeighbor.x > xExtent || potentialNeighbor.x < 0 || potentialNeighbor.y > yExtent
-					|| potentialNeighbor.y < 0) {
-				neighbors.remove(potentialNeighbor);
-			}
-			for (MapLocation resource : getResources()) {
-				if (resource.x == potentialNeighbor.x && resource.y == potentialNeighbor.y) {
-					neighbors.remove(potentialNeighbor);
-				}
-			}
-
-			for (MapLocation archerLoc : enemyLocation) {
-				if (archerLoc.x == potentialNeighbor.x && archerLoc.y == potentialNeighbor.y) {
-					neighbors.remove(potentialNeighbor);
-				}
-			}
-		}
-
-		return neighbors;
-	}
-
-	private Map<MapLocation, MapLocation> getPossibleChildrenPairs() {
-
-		HashMap<MapLocation, MapLocation> possibleChildren = new HashMap<MapLocation, MapLocation>();
-		List<MapLocation> player1 = null;
-		List<MapLocation> player2 = null;
-
-		if (isMaxTurn) {
-			player1 = getLegalLocations(footmen.get(0));
-			player2 = getLegalLocations(footmen.get(1));
-		} else {
-			player1 = getLegalLocations(archers.get(0));
-			player2 = getLegalLocations(archers.get(1));
-		}
-
-		for (int i = 0; i < player1.size(); i++) {
-			for (int j = 0; j < player2.size(); j++) {
-				if (!((player1.get(i).x == player2.get(j).x) && (player1.get(i).y == player2.get(j).y))) {
-					possibleChildren.put(player1.get(i), player2.get(j));
-				}
-			}
-		}
-
-		return possibleChildren;
+		return actions;
 	}
 
 	/**
