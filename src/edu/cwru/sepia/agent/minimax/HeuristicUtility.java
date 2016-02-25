@@ -6,6 +6,7 @@ import java.util.Map;
 
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
+import edu.cwru.sepia.util.DistanceMetrics;
 
 public class HeuristicUtility {
 
@@ -21,7 +22,12 @@ public class HeuristicUtility {
 		this.state = state;
 		this.archers = archers;
 		this.footmen = footmen;
+		extractUnitInfo();
+	}
 
+	public double getHeuristic() {
+
+		return 0.00;
 	}
 
 	private void extractUnitInfo() {
@@ -34,8 +40,21 @@ public class HeuristicUtility {
 		}
 	}
 
-	public double getHeuristic() {
+	private double distanceBetween() {
 
-		return 0.00;
+		double max = Double.MIN_VALUE;
+
+		for (Unit.UnitView footman : footmen) {
+			for (Unit.UnitView archer : archers) {
+
+				double newVal = DistanceMetrics.euclideanDistance(footman.getXPosition(), footman.getYPosition(),
+						archer.getXPosition(), archer.getYPosition());
+				if (newVal > max) {
+					max = newVal;
+				}
+			}
+		}
+		return max;
 	}
+
 }

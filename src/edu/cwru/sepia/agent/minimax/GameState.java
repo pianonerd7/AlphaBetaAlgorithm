@@ -52,9 +52,6 @@ public class GameState {
 	 */
 	public GameState(State.StateView state) {
 		this.stateView = state;
-
-		this.xExtent = state.getXExtent();
-		this.yExtent = state.getYExtent();
 		populatePlayers();
 	}
 
