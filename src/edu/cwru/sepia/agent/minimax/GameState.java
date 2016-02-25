@@ -83,6 +83,7 @@ public class GameState {
 
 			if (isLocationValid(unit.getXPosition() + direction.xComponent(),
 					unit.getYPosition() + direction.yComponent())) {
+				System.out.println("x: " + direction.xComponent() + "y: " + direction.yComponent());
 				legalActions.add(Action.createPrimitiveMove(unit.getID(), direction));
 			}
 		}
@@ -125,6 +126,8 @@ public class GameState {
 					map.put(archers.get(0).getID(), actions.get(0).get(i));
 					map.put(archers.get(1).getID(), actions.get(1).get(j));
 				}
+
+				actionPairs.add(map);
 			}
 		}
 		return actionPairs;
