@@ -1,11 +1,13 @@
 package edu.cwru.sepia.agent.minimax;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
+import edu.cwru.sepia.action.DirectedAction;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
 import edu.cwru.sepia.util.Direction;
@@ -114,12 +116,36 @@ public class GameState {
 			for (int j = 0; j < actions.get(1).size(); j++) {
 
 				Map<Integer, Action> map = new HashMap<Integer, Action>();
-				map.put(footmen.get(0).getID(), actions.get(0).get(i));
-				map.put(footmen.get(1).getID(), actions.get(1).get(j));
+
+				if (MinimaxAlphaBeta.isMaxTurn) {
+					map.put(footmen.get(0).getID(), actions.get(0).get(i));
+					map.put(footmen.get(1).getID(), actions.get(1).get(j));
+				} else {
+					map.put(archers.get(0).getID(), actions.get(0).get(i));
+					map.put(archers.get(1).getID(), actions.get(1).get(j));
+				}
 			}
 		}
-
 		return actionPairs;
+	}
+
+	private GameState executeAction(Map<Integer, Action> action) {
+
+		try {
+			State newState = this.stateView.getStateCreator().createState();
+
+			for (int key : action.keySet()) {
+
+				Direction direction = ((DirectedAction) action.get(key)).getDirection();
+				newState.moveUnit(newState.getUnit(key), direction);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// return new GameState(newState.getView(action.keySet()[0]));
+		return null;
 	}
 
 	/**
@@ -167,6 +193,10 @@ public class GameState {
 	public List<GameStateChild> getChildren() {
 
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
+
+		for (Map<Integer, Action> action : getActionPairs()) {
+			childrenList.add(new GameStateChild(action, executeAction(action)));
+		}
 
 		return childrenList;
 	}
