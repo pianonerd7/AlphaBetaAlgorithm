@@ -140,13 +140,14 @@ public class GameState {
 				newState.moveUnit(newState.getUnit(key), direction);
 			}
 
-			isStateValid(newState);
+			// isStateValid(newState);
+			return new GameState(newState.getView(this.stateView.getPlayerNumbers()[0]));
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		// return new GameState(newState.getView(action.keySet()[0]));
 		return null;
 	}
 
@@ -209,7 +210,11 @@ public class GameState {
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
 		for (Map<Integer, Action> action : getActionPairs()) {
-			childrenList.add(new GameStateChild(action, executeAction(action)));
+			GameState state = executeAction(action);
+			if (state == null) {
+				continue;
+			}
+			childrenList.add(new GameStateChild(action, state));
 		}
 
 		return childrenList;
