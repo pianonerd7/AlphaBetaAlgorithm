@@ -13,7 +13,7 @@ import edu.cwru.sepia.environment.model.state.State;
 public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
-	private boolean isMaxTurn = true;
+	public static boolean isMaxTurn = true;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);

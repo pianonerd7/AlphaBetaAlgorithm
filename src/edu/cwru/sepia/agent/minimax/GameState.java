@@ -1,7 +1,9 @@
 package edu.cwru.sepia.agent.minimax;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.environment.model.state.State;
@@ -23,7 +25,6 @@ public class GameState {
 	public int yExtent;
 	public List<Unit.UnitView> archers;
 	public List<Unit.UnitView> footmen;
-	private boolean isMaxTurn = true;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -68,9 +69,9 @@ public class GameState {
 		}
 	}
 
-	private List<Action> getAction(Unit.UnitView unit) {
+	private ArrayList<Action> getAction(Unit.UnitView unit) {
 
-		List<Action> legalActions = new ArrayList<Action>();
+		ArrayList<Action> legalActions = new ArrayList<Action>();
 
 		for (Direction direction : Direction.values()) {
 			if (direction.xComponent() == 0 || direction.yComponent() == 0) {
@@ -89,6 +90,36 @@ public class GameState {
 	private boolean isLocationValid(int x, int y) {
 
 		return !(stateView.isUnitAt(x, y) && stateView.isResourceAt(x, y)) && stateView.inBounds(x, y);
+	}
+
+	private List<Map<Integer, Action>> getActionPairs() {
+
+		List<ArrayList<Action>> actions = new ArrayList<ArrayList<Action>>();
+
+		if (MinimaxAlphaBeta.isMaxTurn) {
+
+			for (Unit.UnitView footman : footmen) {
+				actions.add(getAction(footman));
+			}
+		} else {
+
+			for (Unit.UnitView archer : archers) {
+				actions.add(getAction(archer));
+			}
+		}
+
+		List<Map<Integer, Action>> actionPairs = new ArrayList<Map<Integer, Action>>();
+
+		for (int i = 0; i < actions.get(0).size(); i++) {
+			for (int j = 0; j < actions.get(1).size(); j++) {
+
+				Map<Integer, Action> map = new HashMap<Integer, Action>();
+				map.put(footmen.get(0).getID(), actions.get(0).get(i));
+				map.put(footmen.get(1).getID(), actions.get(1).get(j));
+			}
+		}
+
+		return actionPairs;
 	}
 
 	/**
@@ -137,6 +168,6 @@ public class GameState {
 
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
-		return null;
+		return childrenList;
 	}
 }
