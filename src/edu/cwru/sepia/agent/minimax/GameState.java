@@ -24,8 +24,6 @@ import edu.cwru.sepia.util.DistanceMetrics;
 public class GameState {
 
 	public State.StateView stateView;
-	public int xExtent;
-	public int yExtent;
 	public List<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
 	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
 
@@ -77,7 +75,7 @@ public class GameState {
 		ArrayList<Action> legalActions = new ArrayList<Action>();
 
 		for (Direction direction : Direction.values()) {
-			if (direction.xComponent() == 0 || direction.yComponent() == 0) {
+			if (!(direction.xComponent() == 0 || direction.yComponent() == 0)) {
 				continue;
 			}
 
@@ -189,19 +187,19 @@ public class GameState {
 	 */
 	public double getUtility() {
 
-		double min = Double.MIN_VALUE;
+		double max = Double.MIN_VALUE;
 
 		for (Unit.UnitView footman : footmen) {
 			for (Unit.UnitView archer : archers) {
 
 				double newVal = DistanceMetrics.euclideanDistance(footman.getXPosition(), footman.getYPosition(),
 						archer.getXPosition(), archer.getYPosition());
-				if (min > newVal) {
-					min = newVal;
+				if (newVal > max) {
+					max = newVal;
 				}
 			}
 		}
-		return min;
+		return max;
 	}
 
 	/**
