@@ -139,6 +139,8 @@ public class GameState {
 				Direction direction = ((DirectedAction) action.get(key)).getDirection();
 				newState.moveUnit(newState.getUnit(key), direction);
 			}
+
+			isStateValid(newState);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -147,6 +149,18 @@ public class GameState {
 		// return new GameState(newState.getView(action.keySet()[0]));
 		return null;
 	}
+
+	/*
+	 * private boolean isStateValid(State newState) {
+	 * 
+	 * Collection<PlayerState> playerStates = newState.getPlayerStates();
+	 * 
+	 * HashMap<Integer, Integer> checker = new HashMap<Integer, Integer>();
+	 * 
+	 * for (PlayerState player : playerStates) { }
+	 * 
+	 * newState.stateView }
+	 */
 
 	/**
 	 * You will implement this function.
