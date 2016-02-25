@@ -11,7 +11,6 @@ import edu.cwru.sepia.action.DirectedAction;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
 import edu.cwru.sepia.util.Direction;
-import edu.cwru.sepia.util.DistanceMetrics;
 
 /**
  * This class stores all of the information the agent needs to know about the
@@ -184,19 +183,7 @@ public class GameState {
 	 */
 	public double getUtility() {
 
-		double max = Double.MIN_VALUE;
-
-		for (Unit.UnitView footman : footmen) {
-			for (Unit.UnitView archer : archers) {
-
-				double newVal = DistanceMetrics.euclideanDistance(footman.getXPosition(), footman.getYPosition(),
-						archer.getXPosition(), archer.getYPosition());
-				if (newVal > max) {
-					max = newVal;
-				}
-			}
-		}
-		return max;
+		return new HeuristicUtility(this.stateView, this.archers, this.footmen).getHeuristic();
 	}
 
 	/**
