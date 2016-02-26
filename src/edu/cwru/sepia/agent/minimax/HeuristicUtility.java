@@ -27,7 +27,7 @@ public class HeuristicUtility {
 
 	public double getHeuristic() {
 
-		return 0.00;
+		return distanceBetween();
 	}
 
 	private void extractUnitInfo() {
@@ -54,7 +54,7 @@ public class HeuristicUtility {
 				}
 			}
 		}
-		return max;
+		return 100 - max;
 	}
 
 }

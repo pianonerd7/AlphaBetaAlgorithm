@@ -82,7 +82,42 @@ public class GameState {
 			}
 		}
 
+		for (Unit.UnitView enemy : getAttackableEnemies(unit)) {
+			legalActions.add(Action.createPrimitiveAttack(unit.getID(), enemy.getID()));
+		}
+
 		return legalActions;
+	}
+
+	private ArrayList<Unit.UnitView> getAttackableEnemies(Unit.UnitView unit) {
+
+		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
+
+		int range = unit.getTemplateView().getRange();
+
+		if (MinimaxAlphaBeta.isMaxTurn) {
+			attackables = getEnemyList(unit, archers, range);
+		} else {
+			attackables = getEnemyList(unit, footmen, range);
+		}
+
+		return attackables;
+	}
+
+	private ArrayList<Unit.UnitView> getEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies, int range) {
+
+		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
+
+		for (Unit.UnitView enemy : enemies) {
+			int diffX = Math.abs(enemy.getXPosition() - unit.getXPosition());
+			int diffY = Math.abs(enemy.getYPosition() - unit.getYPosition());
+
+			if (range >= (diffX + diffY)) {
+				attackables.add(enemy);
+			}
+		}
+
+		return attackables;
 	}
 
 	private boolean isLocationValid(int x, int y) {
