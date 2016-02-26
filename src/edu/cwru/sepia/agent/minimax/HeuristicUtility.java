@@ -42,19 +42,19 @@ public class HeuristicUtility {
 
 	private double distanceBetween() {
 
-		double max = Double.MIN_VALUE;
+		double min = Double.MAX_VALUE;
 
 		for (Unit.UnitView footman : footmen) {
 			for (Unit.UnitView archer : archers) {
 
-				double newVal = DistanceMetrics.euclideanDistance(footman.getXPosition(), footman.getYPosition(),
+				double newVal = DistanceMetrics.chebyshevDistance(footman.getXPosition(), footman.getYPosition(),
 						archer.getXPosition(), archer.getYPosition());
-				if (newVal > max) {
-					max = newVal;
+				if (newVal < min) {
+					min = newVal;
 				}
 			}
 		}
-		return 100 - max;
+		return min;
 	}
 
 }

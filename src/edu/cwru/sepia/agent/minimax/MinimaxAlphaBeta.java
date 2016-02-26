@@ -2,6 +2,7 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -118,6 +119,7 @@ public class MinimaxAlphaBeta extends Agent {
 		}
 
 		isMaxTurn = !isMaxTurn;
+
 		return bestNode;
 	}
 
@@ -137,6 +139,24 @@ public class MinimaxAlphaBeta extends Agent {
 	 * @return The list of children sorted by your heuristic.
 	 */
 	public List<GameStateChild> orderChildrenWithHeuristics(List<GameStateChild> children) {
-		return children;
+
+		List<GameStateChild> orderedChildren = new ArrayList<GameStateChild>();
+
+		for (int i = 0; i < children.size(); i++) {
+			double max = Double.MIN_VALUE;
+			GameStateChild bestChild = null;
+			for (int j = 0; j < children.size(); j++) {
+
+				double utility = children.get(j).state.getUtility();
+				if (utility > max) {
+					max = utility;
+					bestChild = children.get(j);
+				}
+			}
+			orderedChildren.add(bestChild);
+			children.remove(bestChild);
+		}
+
+		return orderedChildren;
 	}
 }
