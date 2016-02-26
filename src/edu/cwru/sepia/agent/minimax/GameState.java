@@ -8,6 +8,7 @@ import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.action.DirectedAction;
+import edu.cwru.sepia.action.TargetedAction;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
 import edu.cwru.sepia.util.Direction;
@@ -169,8 +170,19 @@ public class GameState {
 
 			for (int key : action.keySet()) {
 
-				Direction direction = ((DirectedAction) action.get(key)).getDirection();
-				newState.moveUnit(newState.getUnit(key), direction);
+				if (action.get(key) instanceof TargetedAction) {
+
+					Unit beingAttacked = newState.getUnit(((TargetedAction) action.get(key)).getTargetId());
+					beingAttacked.setHP(
+							beingAttacked.getCurrentHealth() - newState.getUnit(key).getTemplate().getBasicAttack());
+
+					if (beingAttacked.getCurrentHealth() < 1) {
+						newState.removeUnit(((TargetedAction) action.get(key)).getTargetId());
+					}
+				} else {
+					Direction direction = ((DirectedAction) action.get(key)).getDirection();
+					newState.moveUnit(newState.getUnit(key), direction);
+				}
 			}
 
 			// isStateValid(newState);
