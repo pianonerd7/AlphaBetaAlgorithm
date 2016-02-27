@@ -104,15 +104,15 @@ public class GameState {
 		int range = unit.getTemplateView().getRange();
 
 		if (MinimaxAlphaBeta.isMaxTurn) {
-			attackables = getEnemyList(unit, archers, range);
+			attackables = getAttackableEnemyList(unit, archers, range);
 		} else {
-			attackables = getEnemyList(unit, footmen, range);
+			attackables = getAttackableEnemyList(unit, footmen, range);
 		}
 
 		return attackables;
 	}
 
-	private ArrayList<Unit.UnitView> getEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies, int range) {
+	private ArrayList<Unit.UnitView> getAttackableEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies, int range) {
 
 		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
 
@@ -265,13 +265,7 @@ public class GameState {
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
 		for (Map<Integer, Action> action : getActionPairs()) {
-			GameState newState = executeAction(action);
-
-			if (newState == null) {
-				continue;
-			}
-
-			childrenList.add(new GameStateChild(action, newState));
+			childrenList.add(new GameStateChild(action, this));
 		}
 
 		return childrenList;

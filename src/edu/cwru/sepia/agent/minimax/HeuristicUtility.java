@@ -17,7 +17,7 @@ public class HeuristicUtility {
 	private Map<Integer, Integer> archersHP = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> footmenHP = new HashMap<Integer, Integer>();
 
-	public HeuristicUtility(State.StateView state, List<Unit.UnitView> archers, List<Unit.UnitView> footmen) {
+	public HeuristicUtility(GameChildNode node) {
 		this.state = state;
 		this.archers = archers;
 		this.footmen = footmen;
