@@ -340,7 +340,9 @@ public class GameState {
 				for (Integer footmanKey : fkey) {
 
 					if (key == footmanKey) {
-						me.add(footmenLocation.get(footmanKey));
+						MapLocation ml = new MapLocation(footmenLocation.get(footmanKey).x,
+								footmenLocation.get(footmanKey).y);
+						me.add(ml);
 						id.add(key);
 					}
 				}
@@ -349,7 +351,9 @@ public class GameState {
 				for (Integer archerKey : archerLocation.keySet()) {
 
 					if (key == archerKey) {
-						me.add(archerLocation.get(archerKey));
+						MapLocation ml = new MapLocation(archerLocation.get(archerKey).x,
+								archerLocation.get(archerKey).y);
+						me.add(ml);
 						id.add(key);
 					}
 				}
@@ -360,12 +364,12 @@ public class GameState {
 		}
 		// footmen's turn
 		if (MinimaxAlphaBeta.isMaxTurn) {
-			Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
-			return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
-					allUnits, footmenAttackRange, archerAttackRange);
-		} else {
 			Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
 			return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
+					allUnits, footmenAttackRange, archerAttackRange);
+		} else {
+			Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
+			return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
 					allUnits, footmenAttackRange, archerAttackRange);
 		}
 	}
@@ -475,13 +479,6 @@ public class GameState {
 
 			System.out.println("\n\n");
 		}
-
-		System.out.println("\n\n ");
-
-		for (int i = 0; i < childrenList.size(); i++) {
-			System.out.println("childlist: " + childrenList.get(i).state.footmenLocation.toString());
-		}
-
 		return childrenList;
 	}
 }
