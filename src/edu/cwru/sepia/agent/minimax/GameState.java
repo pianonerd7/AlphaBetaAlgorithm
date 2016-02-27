@@ -1,6 +1,5 @@
 package edu.cwru.sepia.agent.minimax;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,12 +23,39 @@ import edu.cwru.sepia.util.Direction;
  */
 public class GameState {
 
+	class MapLocation {
+		public int x;
+		public int y;
+		public int heuristicCost = 0;
+		public int functionCost = 0;
+		public int nodeCost = 0;
+		public MapLocation cameFrom;
+
+		public MapLocation(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		@Override
+		public String toString() {
+			return "x: " + x + ", y: " + y + ", f: " + functionCost + ", heuristic: " + heuristicCost + ", nodecost: "
+					+ nodeCost;
+		}
+	}
+
 	public State.StateView stateView;
-	public List<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
-	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
-	public Map<Integer, Integer> footmenIDHP = new HashMap<Integer, Integer>();
-	public Map<Integer, Integer> archerIDHP = new HashMap<Integer, Integer>();
-	public Collection<Unit.UnitView> allUnits;
+	// id and xy location
+	public Map<Integer, MapLocation> footmenLocation = new HashMap<Integer, MapLocation>();
+	// id and xy location
+	public Map<Integer, MapLocation> archerLocation = new HashMap<Integer, MapLocation>();
+	public List<Integer> footmenID = new ArrayList<Integer>();
+	public List<Integer> archerID = new ArrayList<Integer>();
+	public List<Integer> footmenHP = new ArrayList<Integer>();
+	public List<Integer> archerHP = new ArrayList<Integer>();
+	public int footmenAttackRange;
+	public int archerAttackRange;
+
+	Collection<Unit.UnitView> allUnits;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -59,13 +85,19 @@ public class GameState {
 		populatePlayers(state);
 	}
 
-	public GameState(State.StateView state, List<Unit.UnitView> archers, List<Unit.UnitView> footmen,
-			Map<Integer, Integer> archerIDHP, Map<Integer, Integer> footmenIDHP, Collection<Unit.UnitView> allUnits) {
+	public GameState(State.StateView state, Map<Integer, MapLocation> footmenLocation,
+			Map<Integer, MapLocation> archerLocation, List<Integer> footmenID, List<Integer> archerID,
+			List<Integer> footmenHP, List<Integer> archerHP, Collection<Unit.UnitView> allUnits, int footmenAttackRange,
+			int archerAttackRange) {
 		this.stateView = state;
-		this.archers = archers;
-		this.footmen = footmen;
-		this.archerIDHP = archerIDHP;
-		this.footmenIDHP = footmenIDHP;
+		this.footmenLocation = footmenLocation;
+		this.archerLocation = archerLocation;
+		this.footmenID = footmenID;
+		this.archerID = archerID;
+		this.footmenHP = footmenHP;
+		this.archerHP = archerHP;
+		this.footmenAttackRange = footmenAttackRange;
+		this.archerAttackRange = archerAttackRange;
 	}
 
 	private void populatePlayers(State.StateView state) {
@@ -74,64 +106,120 @@ public class GameState {
 
 		for (Unit.UnitView unit : units) {
 			if (unit.getTemplateView().getName().equals("Archer")) {
-				this.archers.add(unit);
-				footmenIDHP.put(unit.getID(), unit.getHP());
+
+				this.archerLocation.put(unit.getID(), new MapLocation(unit.getXPosition(), unit.getYPosition()));
+				this.archerID.add(unit.getID());
+				this.archerHP.add(unit.getHP());
+				this.archerAttackRange = unit.getTemplateView().getRange();
 			}
 			if (unit.getTemplateView().getName().equals("Footman")) {
-				this.footmen.add(unit);
-				archerIDHP.put(unit.getID(), unit.getHP());
+
+				this.footmenLocation.put(unit.getID(), new MapLocation(unit.getXPosition(), unit.getYPosition()));
+				this.footmenID.add(unit.getID());
+				this.footmenHP.add(unit.getHP());
+				this.footmenAttackRange = unit.getTemplateView().getRange();
 			}
 		}
 
 		this.allUnits = units;
 	}
 
-	private ArrayList<Action> getAction(Unit.UnitView unit) {
+	private ArrayList<Action> getAction(Integer id, MapLocation location) {
 
 		ArrayList<Action> legalActions = new ArrayList<Action>();
 
 		for (Direction direction : Direction.values()) {
+
+			// skip diagonals
 			if (!(direction.xComponent() == 0 || direction.yComponent() == 0)) {
 				continue;
 			}
 
-			if (isLocationValid(unit.getXPosition() + direction.xComponent(),
-					unit.getYPosition() + direction.yComponent())) {
-				System.out.println("x: " + direction.xComponent() + "y: " + direction.yComponent());
-				legalActions.add(Action.createPrimitiveMove(unit.getID(), direction));
+			if (isLocationValid(location.x + direction.xComponent(), location.y + direction.yComponent())) {
+
+				legalActions.add(Action.createPrimitiveMove(id, direction));
 			}
 		}
 
-		for (Unit.UnitView enemy : getAttackableEnemies(unit)) {
-			legalActions.add(Action.createPrimitiveAttack(unit.getID(), enemy.getID()));
+		for (MapLocation enemy : getAttackableEnemies(location)) {
+
+			int enemyId = -1;
+			if (MinimaxAlphaBeta.isMaxTurn) {
+
+				for (Integer key : archerLocation.keySet()) {
+
+					MapLocation loc = archerLocation.get(key);
+
+					if (loc.x == enemy.x && loc.y == enemy.y) {
+						enemyId = key;
+					}
+				}
+			}
+
+			legalActions.add(Action.createPrimitiveAttack(id, enemyId));
 		}
 
 		return legalActions;
 	}
 
-	private ArrayList<Unit.UnitView> getAttackableEnemies(Unit.UnitView unit) {
+	private boolean isLocationValid(int x, int y) {
 
-		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
+		if (stateView.isResourceAt(x, y) || stateView.inBounds(x, y)) {
+			return false;
+		}
 
-		int range = unit.getTemplateView().getRange();
+		for (Integer key : footmenLocation.keySet()) {
+			MapLocation locations = footmenLocation.get(key);
+
+			if (x == locations.x && y == locations.y) {
+				return false;
+			}
+		}
+
+		for (Integer key : archerLocation.keySet()) {
+			MapLocation locations = footmenLocation.get(key);
+
+			if (x == locations.x && y == locations.y) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private ArrayList<MapLocation> getAttackableEnemies(MapLocation location) {
+
+		ArrayList<MapLocation> attackables = new ArrayList<MapLocation>();
 
 		if (MinimaxAlphaBeta.isMaxTurn) {
-			attackables = getAttackableEnemyList(unit, archers, range);
+			// footmen's turn, my enemy is the archers
+			List<MapLocation> enemies = new ArrayList<MapLocation>();
+
+			for (Integer key : archerLocation.keySet()) {
+				enemies.add(archerLocation.get(key));
+			}
+
+			attackables = getAttackableEnemyList(location, enemies, footmenAttackRange);
 		} else {
-			attackables = getAttackableEnemyList(unit, footmen, range);
+
+			List<MapLocation> enemies = new ArrayList<MapLocation>();
+
+			for (Integer key : footmenLocation.keySet()) {
+				enemies.add(footmenLocation.get(key));
+			}
+			attackables = getAttackableEnemyList(location, enemies, archerAttackRange);
 		}
 
 		return attackables;
 	}
 
-	private ArrayList<Unit.UnitView> getAttackableEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies,
-			int range) {
+	private ArrayList<MapLocation> getAttackableEnemyList(MapLocation me, List<MapLocation> enemies, int range) {
 
-		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
+		ArrayList<MapLocation> attackables = new ArrayList<MapLocation>();
 
-		for (Unit.UnitView enemy : enemies) {
-			int diffX = Math.abs(enemy.getXPosition() - unit.getXPosition());
-			int diffY = Math.abs(enemy.getYPosition() - unit.getYPosition());
+		for (MapLocation enemy : enemies) {
+			int diffX = Math.abs(enemy.x - me.x);
+			int diffY = Math.abs(enemy.y - me.y);
 
 			if (range >= (diffX + diffY)) {
 				attackables.add(enemy);
@@ -141,105 +229,162 @@ public class GameState {
 		return attackables;
 	}
 
-	private boolean isLocationValid(int x, int y) {
-
-		return !(stateView.isUnitAt(x, y) && stateView.isResourceAt(x, y)) && stateView.inBounds(x, y);
-	}
-
 	private List<Map<Integer, Action>> getActionPairs() {
 
 		List<ArrayList<Action>> actions = new ArrayList<ArrayList<Action>>();
 
 		if (MinimaxAlphaBeta.isMaxTurn) {
 
-			for (Unit.UnitView footman : footmen) {
-				actions.add(getAction(footman));
+			for (Integer key : footmenLocation.keySet()) {
+				actions.add(getAction(key, footmenLocation.get(key)));
 			}
 		} else {
 
-			for (Unit.UnitView archer : archers) {
-				actions.add(getAction(archer));
+			for (Integer key : archerLocation.keySet()) {
+				actions.add(getAction(key, archerLocation.get(key)));
 			}
 		}
 
 		List<Map<Integer, Action>> actionPairs = new ArrayList<Map<Integer, Action>>();
 
-		for (int i = 0; i < actions.get(0).size(); i++) {
-			for (int j = 0; j < actions.get(1).size(); j++) {
+		if (MinimaxAlphaBeta.isMaxTurn) {
 
-				Map<Integer, Action> map = new HashMap<Integer, Action>();
+			if (footmenLocation.size() == 2) {
 
-				if (MinimaxAlphaBeta.isMaxTurn) {
-					map.put(footmen.get(0).getID(), actions.get(0).get(i));
-					map.put(footmen.get(1).getID(), actions.get(1).get(j));
-				} else {
-					map.put(archers.get(0).getID(), actions.get(0).get(i));
-					map.put(archers.get(1).getID(), actions.get(1).get(j));
+				for (int i = 0; i < actions.get(0).size(); i++) {
+					for (int j = 0; j < actions.get(1).size(); j++) {
+
+						Map<Integer, Action> map = new HashMap<Integer, Action>();
+
+						ArrayList<Integer> keys = new ArrayList<Integer>();
+						for (Integer key : footmenLocation.keySet()) {
+							keys.add(key);
+						}
+						map.put(keys.get(0), actions.get(0).get(i));
+						map.put(keys.get(1), actions.get(1).get(j));
+
+						actionPairs.add(map);
+					}
 				}
+				return actionPairs;
+			} else if (footmenLocation.size() == 1) {
 
-				actionPairs.add(map);
+				for (int i = 0; i < actions.get(0).size(); i++) {
+
+					Map<Integer, Action> map = new HashMap<Integer, Action>();
+
+					ArrayList<Integer> keys = new ArrayList<Integer>();
+					for (Integer key : footmenLocation.keySet()) {
+						keys.add(key);
+					}
+					map.put(keys.get(0), actions.get(0).get(i));
+
+					actionPairs.add(map);
+				}
+				return actionPairs;
+			}
+		}
+		if (!MinimaxAlphaBeta.isMaxTurn) {
+			if (archerLocation.size() == 2) {
+
+				for (int i = 0; i < actions.get(0).size(); i++) {
+					for (int j = 0; j < actions.get(1).size(); j++) {
+
+						Map<Integer, Action> map = new HashMap<Integer, Action>();
+
+						ArrayList<Integer> keys = new ArrayList<Integer>();
+
+						for (Integer key : archerLocation.keySet()) {
+							keys.add(key);
+						}
+						map.put(keys.get(0), actions.get(0).get(i));
+						map.put(keys.get(1), actions.get(1).get(j));
+
+						actionPairs.add(map);
+					}
+				}
+				return actionPairs;
+			} else if (archerLocation.size() == 1) {
+
+				for (int i = 0; i < actions.get(0).size(); i++) {
+
+					Map<Integer, Action> map = new HashMap<Integer, Action>();
+
+					ArrayList<Integer> keys = new ArrayList<Integer>();
+
+					for (Integer key : archerLocation.keySet()) {
+						keys.add(key);
+					}
+					map.put(keys.get(0), actions.get(0).get(i));
+
+					actionPairs.add(map);
+				}
+				return actionPairs;
 			}
 		}
 		return actionPairs;
 	}
 
-	private GameState executeAction(Map<Integer, Action> action) {
+	private GameState executeAction(Map<Integer, Action> action, List<Unit.UnitView> archers,
+			List<Unit.UnitView> footmen, List<Integer> footmenID, List<Integer> archerID,
+			Map<Integer, Integer> footmenHP, Map<Integer, Integer> archerHP, Collection<Unit.UnitView> units) {
 
-		try {
-			State newState = this.stateView.getStateCreator().createState();
+		for (int key : action.keySet()) {
 
-			for (int key : action.keySet()) {
+			if (action.get(key) instanceof TargetedAction) {
 
-				if (action.get(key) instanceof TargetedAction) {
+				Unit beingAttacked = newState.getUnit(((TargetedAction) action.get(key)).getTargetId());
+				beingAttacked
+						.setHP(beingAttacked.getCurrentHealth() - newState.getUnit(key).getTemplate().getBasicAttack());
 
-					Unit beingAttacked = newState.getUnit(((TargetedAction) action.get(key)).getTargetId());
-					beingAttacked.setHP(
-							beingAttacked.getCurrentHealth() - newState.getUnit(key).getTemplate().getBasicAttack());
-
-					if (beingAttacked.getCurrentHealth() < 1) {
-						newState.removeUnit(((TargetedAction) action.get(key)).getTargetId());
-					}
-				} else {
-					Direction direction = ((DirectedAction) action.get(key)).getDirection();
-					newState.moveUnit(newState.getUnit(key), direction);
+				if (beingAttacked.getCurrentHealth() < 1) {
+					newState.removeUnit(((TargetedAction) action.get(key)).getTargetId());
 				}
+			} else {
+				Direction direction = ((DirectedAction) action.get(key)).getDirection();
+
+				// footmen's turn
+				if (MinimaxAlphaBeta.isMaxTurn) {
+					for (Unit.UnitView footman : footmen) {
+						if (footman.getID() == key) {
+							Action.createPrimitiveMove(key, direction);
+						}
+					}
+				}
+				newState.moveUnit(newState.getUnit(key), direction);
 			}
-
-			// isStateValid(newState);
-
-			State.StateView s = newState.getView(this.stateView.getPlayerNumbers()[0]);
-			GameState g = extractActionInfo(s);
-			return g;
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-
-		return null;
 	}
 
-	private GameState extractActionInfo(State.StateView state) {
+	private void extractActionInfo(Map<Integer, Action> action) {
 
-		Collection<Unit.UnitView> allUnits = state.getAllUnits();
+		Collection<Unit.UnitView> allUnits = this.stateView.getAllUnits();
 
 		List<Unit.UnitView> newArchers = new ArrayList<Unit.UnitView>();
 		List<Unit.UnitView> newFootmen = new ArrayList<Unit.UnitView>();
-		Map<Integer, Integer> newArcherIDHP = new HashMap<Integer, Integer>();
-		Map<Integer, Integer> newFootmenIDHP = new HashMap<Integer, Integer>();
+		List<Integer> newFootmenID = new ArrayList<Integer>();
+		List<Integer> newArcherID = new ArrayList<Integer>();
+		Map<Integer, Integer> newFootmenHP = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> newArcherHP = new HashMap<Integer, Integer>();
 
 		for (Unit.UnitView unit : allUnits) {
 			if (unit.getTemplateView().getName().equals("Archer")) {
 				newArchers.add(unit);
-				newFootmenIDHP.put(unit.getID(), unit.getHP());
+				newArcherID.add(unit.getID());
+				newArcherHP.put(unit.getID(), unit.getHP());
 			}
 			if (unit.getTemplateView().getName().equals("Footman")) {
 				newFootmen.add(unit);
-				newArcherIDHP.put(unit.getID(), unit.getHP());
+				newFootmenID.add(unit.getID());
+				newFootmenHP.put(unit.getID(), unit.getHP());
 			}
 		}
 
-		return new GameState(this.stateView, newArchers, newFootmen, newArcherIDHP, newFootmenIDHP, allUnits);
+		executeAction(action, newArchers, newFootmen, newFootmenID, newArcherID, newFootmenHP, newArcherHP, allUnits);
+		// return new GameState(this.stateView, newArchers, newFootmen,
+		// newFootmenID, newArcherID, newFootmenHP,
+		// newArcherHP, allUnits);
+
 	}
 
 	/*
@@ -276,7 +421,9 @@ public class GameState {
 	 */
 	public double getUtility() {
 
-		return new HeuristicUtility(this.stateView, this.archers, this.footmen).getHeuristic();
+		// return new HeuristicUtility(this.stateView, this.archers,
+		// this.footmen).getHeuristic();
+		return 0.0;
 	}
 
 	/**
