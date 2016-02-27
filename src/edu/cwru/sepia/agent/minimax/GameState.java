@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.action.DirectedAction;
@@ -336,14 +337,55 @@ public class GameState {
 		List<MapLocation> me = new ArrayList<MapLocation>();
 		List<Direction> myDir = new ArrayList<Direction>();
 		List<Integer> id = new ArrayList<Integer>();
+		boolean isDist = false;
+		boolean isAttack = false;
+
+		Map<Integer, MapLocation> newFootmenLocation = new HashMap<Integer, MapLocation>();
+		Map<Integer, MapLocation> newArcherLocation = new HashMap<Integer, MapLocation>();
+		List<Integer> newFootmenID = new ArrayList<Integer>();
+		List<Integer> newArcherID = new ArrayList<Integer>();
+		Map<Integer, Integer> newFootmenHP = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> newArcherHP = new HashMap<Integer, Integer>();
+
+		// clone all objects
+		for (Integer newFootmenKey : footmenLocation.keySet()) {
+			MapLocation newMap = new MapLocation(footmenLocation.get(newFootmenKey).x,
+					footmenLocation.get(newFootmenKey).y);
+			newFootmenLocation.put(newFootmenKey.intValue(), newMap);
+		}
+
+		for (Integer newArcherKey : archerLocation.keySet()) {
+			MapLocation newMap = new MapLocation(archerLocation.get(newArcherKey).x,
+					archerLocation.get(newArcherKey).y);
+			newArcherLocation.put(newArcherKey.intValue(), newMap);
+		}
+
+		for (Integer footmanID : footmenID) {
+			newFootmenID.add(footmanID);
+		}
+
+		for (Integer archID : archerID) {
+			newArcherID.add(archID);
+		}
+
+		for (Integer footmanHPKey : footmenHP.keySet()) {
+			newFootmenHP.put(footmanHPKey.intValue(), footmenHP.get(footmanHPKey).intValue());
+		}
+
+		for (Integer archerHPKey : archerHP.keySet()) {
+			newArcherHP.put(archerHPKey.intValue(), archerHP.get(archerHPKey).intValue());
+		}
 
 		for (int key : action.keySet()) {
 
 			if (action.get(key) instanceof DirectedAction) {
 
+				isDist = true;
+
 				if (MinimaxAlphaBeta.isMaxTurn) {
 
-					for (Integer footmanKey : footmenLocation.keySet()) {
+					Set<Integer> fkey = footmenLocation.keySet();
+					for (Integer footmanKey : fkey) {
 
 						if (key == footmanKey) {
 							MapLocation ml = new MapLocation(footmenLocation.get(footmanKey).x,
@@ -367,58 +409,11 @@ public class GameState {
 
 				Direction direction = ((DirectedAction) action.get(key)).getDirection();
 				myDir.add(direction);
-
-				// footmen's turn
-				if (MinimaxAlphaBeta.isMaxTurn) {
-					Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
-					return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP,
-							archerHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
-				} else {
-					Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
-					return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP,
-							archerHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
-				}
 			}
 
-			else if (action.get(key) instanceof TargetedAction) {
+			if (action.get(key) instanceof TargetedAction) {
 
-				Map<Integer, MapLocation> newFootmenLocation = new HashMap<Integer, MapLocation>();
-				Map<Integer, MapLocation> newArcherLocation = new HashMap<Integer, MapLocation>();
-				List<Integer> newFootmenID = new ArrayList<Integer>();
-				List<Integer> newArcherID = new ArrayList<Integer>();
-				Map<Integer, Integer> newFootmenHP = new HashMap<Integer, Integer>();
-				Map<Integer, Integer> newArcherHP = new HashMap<Integer, Integer>();
-
-				// clone all objects
-				for (Integer newFootmenKey : footmenLocation.keySet()) {
-					MapLocation newMap = new MapLocation(footmenLocation.get(newFootmenKey).x,
-							footmenLocation.get(newFootmenKey).y);
-					newFootmenLocation.put(newFootmenKey.intValue(), newMap);
-				}
-
-				for (Integer newArcherKey : archerLocation.keySet()) {
-					MapLocation newMap = new MapLocation(archerLocation.get(newArcherKey).x,
-							archerLocation.get(newArcherKey).y);
-					newArcherLocation.put(newArcherKey.intValue(), newMap);
-				}
-
-				for (Integer footmanID : footmenID) {
-					newFootmenID.add(footmanID);
-				}
-
-				for (Integer archID : archerID) {
-					newArcherID.add(archID);
-				}
-
-				for (Integer footmanHPKey : footmenHP.keySet()) {
-					newFootmenHP.put(footmanHPKey.intValue(), footmenHP.get(footmanHPKey).intValue());
-				}
-
-				for (Integer archerHPKey : footmenHP.keySet()) {
-					newArcherHP.put(archerHPKey.intValue(), archerHP.get(archerHPKey).intValue());
-				}
-
-				// done cloning
+				isAttack = true;
 
 				int enemyId = action.get(key).getUnitId();
 				int hp;
@@ -441,10 +436,6 @@ public class GameState {
 						newArcherHP.remove(enemyId);
 						newArcherHP.put(enemyId, hp);
 					}
-
-					return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
-							newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-							archerAttackPt);
 				} else {// archer attacks footman
 					hp = newFootmenHP.get(enemyId);
 					hp = hp - archerAttackPt;
@@ -462,14 +453,29 @@ public class GameState {
 						newFootmenHP.remove(enemyId);
 						newFootmenHP.put(enemyId, hp);
 					}
-
-					return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
-							newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-							archerAttackPt);
 				}
-
 			}
 		}
+
+		if (isDist) {
+			// footmen's turn
+			if (MinimaxAlphaBeta.isMaxTurn) {
+				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
+				return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
+						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
+			} else {
+				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
+				return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
+						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
+			}
+		}
+
+		if (isAttack) {
+			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
+					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
+					archerAttackPt);
+		}
+
 		return null;
 	}
 
