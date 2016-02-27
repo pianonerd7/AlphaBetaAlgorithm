@@ -29,6 +29,7 @@ public class GameState {
 	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
 	public Map<Integer, Integer> footmenIDHP = new HashMap<Integer, Integer>();
 	public Map<Integer, Integer> archerIDHP = new HashMap<Integer, Integer>();
+	public Collection<Unit.UnitView> allUnits;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -59,12 +60,12 @@ public class GameState {
 	}
 
 	public GameState(State.StateView state, List<Unit.UnitView> archers, List<Unit.UnitView> footmen,
-			Map<Integer, Integer> footmenIDHP, Map<Integer, Integer> archerIDHP) {
+			Map<Integer, Integer> archerIDHP, Map<Integer, Integer> footmenIDHP, Collection<Unit.UnitView> allUnits) {
 		this.stateView = state;
 		this.archers = archers;
 		this.footmen = footmen;
-		this.footmenIDHP = footmenIDHP;
 		this.archerIDHP = archerIDHP;
+		this.footmenIDHP = footmenIDHP;
 	}
 
 	private void populatePlayers(State.StateView state) {
@@ -81,6 +82,8 @@ public class GameState {
 				archerIDHP.put(unit.getID(), unit.getHP());
 			}
 		}
+
+		this.allUnits = units;
 	}
 
 	private ArrayList<Action> getAction(Unit.UnitView unit) {
@@ -205,7 +208,7 @@ public class GameState {
 			// isStateValid(newState);
 
 			State.StateView s = newState.getView(this.stateView.getPlayerNumbers()[0]);
-			GameState g = new GameState(s);
+			GameState g = extractActionInfo(s);
 			return g;
 
 		} catch (IOException e) {
@@ -214,6 +217,29 @@ public class GameState {
 		}
 
 		return null;
+	}
+
+	private GameState extractActionInfo(State.StateView state) {
+
+		Collection<Unit.UnitView> allUnits = state.getAllUnits();
+
+		List<Unit.UnitView> newArchers = new ArrayList<Unit.UnitView>();
+		List<Unit.UnitView> newFootmen = new ArrayList<Unit.UnitView>();
+		Map<Integer, Integer> newArcherIDHP = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> newFootmenIDHP = new HashMap<Integer, Integer>();
+
+		for (Unit.UnitView unit : allUnits) {
+			if (unit.getTemplateView().getName().equals("Archer")) {
+				newArchers.add(unit);
+				newFootmenIDHP.put(unit.getID(), unit.getHP());
+			}
+			if (unit.getTemplateView().getName().equals("Footman")) {
+				newFootmen.add(unit);
+				newArcherIDHP.put(unit.getID(), unit.getHP());
+			}
+		}
+
+		return new GameState(this.stateView, newArchers, newFootmen, newArcherIDHP, newFootmenIDHP, allUnits);
 	}
 
 	/*
@@ -275,7 +301,7 @@ public class GameState {
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
 		for (Map<Integer, Action> action : getActionPairs()) {
-			childrenList.add(new GameStateChild(action, this));
+			childrenList.add(new GameStateChild(action, executeAction(action)));
 		}
 
 		return childrenList;
