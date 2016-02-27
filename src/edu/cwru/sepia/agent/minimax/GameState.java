@@ -437,9 +437,7 @@ public class GameState {
 	 */
 	public double getUtility() {
 
-		// return new HeuristicUtility(this.stateView, this.archers,
-		// this.footmen).getHeuristic();
-		return 0.0;
+		return new HeuristicUtility(this).getHeuristic();
 	}
 
 	/**
