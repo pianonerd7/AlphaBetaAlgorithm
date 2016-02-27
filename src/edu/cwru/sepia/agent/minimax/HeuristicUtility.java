@@ -6,7 +6,6 @@ import java.util.Map;
 
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
-import edu.cwru.sepia.util.DistanceMetrics;
 
 public class HeuristicUtility {
 
@@ -26,7 +25,6 @@ public class HeuristicUtility {
 	}
 
 	public double getHeuristic() {
-
 		return distanceBetween();
 	}
 
@@ -47,14 +45,26 @@ public class HeuristicUtility {
 		for (Unit.UnitView footman : footmen) {
 			for (Unit.UnitView archer : archers) {
 
-				double newVal = DistanceMetrics.chebyshevDistance(footman.getXPosition(), footman.getYPosition(),
-						archer.getXPosition(), archer.getYPosition());
+				double newVal = minDistance(footman, archer);
 				if (newVal < min) {
 					min = newVal;
 				}
 			}
 		}
-		return min;
+		return 100 - min;
 	}
 
+	private double minDistance(Unit.UnitView me, Unit.UnitView enemy) {
+
+		int me_x = me.getXPosition();
+		int me_y = me.getYPosition();
+		int enemy_x = enemy.getXPosition();
+		int enemy_y = enemy.getYPosition();
+
+		double a = Math.pow(enemy_x - me_x, 2);
+		double b = Math.pow(enemy_y - me_y, 2);
+		double c = Math.sqrt(a + b);
+
+		return c;
+	}
 }

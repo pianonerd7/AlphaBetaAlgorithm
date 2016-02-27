@@ -2,13 +2,13 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.action.DirectedAction;
-import edu.cwru.sepia.action.TargetedAction;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
 import edu.cwru.sepia.util.Direction;
@@ -24,6 +24,7 @@ import edu.cwru.sepia.util.Direction;
 public class GameState {
 
 	public State.StateView stateView;
+	public State state;
 	public List<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
 	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
 
@@ -55,6 +56,18 @@ public class GameState {
 		populatePlayers();
 	}
 
+	public GameState(State state, List<Unit.UnitView> archers, List<Unit.UnitView> footmen) {
+		this.state = state;
+		parseState(archers, footmen);
+	}
+
+	private void parseState(List<Unit.UnitView> archers, List<Unit.UnitView> footmen) {
+
+		for (Unit.UnitView footman : footmen) {
+			this.footmen.add(state.getUnit(footman.getID()));
+		}
+	}
+
 	private void populatePlayers() {
 
 		for (Unit.UnitView unit : stateView.getAllUnits()) {
@@ -78,7 +91,8 @@ public class GameState {
 
 			if (isLocationValid(unit.getXPosition() + direction.xComponent(),
 					unit.getYPosition() + direction.yComponent())) {
-				System.out.println("x: " + direction.xComponent() + "y: " + direction.yComponent());
+				// System.out.println("x: " + direction.xComponent() + "y: " +
+				// direction.yComponent());
 				legalActions.add(Action.createPrimitiveMove(unit.getID(), direction));
 			}
 		}
@@ -97,15 +111,16 @@ public class GameState {
 		int range = unit.getTemplateView().getRange();
 
 		if (MinimaxAlphaBeta.isMaxTurn) {
-			attackables = getEnemyList(unit, archers, range);
+			attackables = getAttackableEnemyList(unit, archers, range);
 		} else {
-			attackables = getEnemyList(unit, footmen, range);
+			attackables = getAttackableEnemyList(unit, footmen, range);
 		}
 
 		return attackables;
 	}
 
-	private ArrayList<Unit.UnitView> getEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies, int range) {
+	private ArrayList<Unit.UnitView> getAttackableEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies,
+			int range) {
 
 		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
 
@@ -163,30 +178,19 @@ public class GameState {
 		return actionPairs;
 	}
 
-	private GameState executeAction(Map<Integer, Action> action) {
+	private State executeAction(Map<Integer, Action> action) {
 
 		try {
 			State newState = this.stateView.getStateCreator().createState();
 
 			for (int key : action.keySet()) {
 
-				if (action.get(key) instanceof TargetedAction) {
-
-					Unit beingAttacked = newState.getUnit(((TargetedAction) action.get(key)).getTargetId());
-					beingAttacked.setHP(
-							beingAttacked.getCurrentHealth() - newState.getUnit(key).getTemplate().getBasicAttack());
-
-					if (beingAttacked.getCurrentHealth() < 1) {
-						newState.removeUnit(((TargetedAction) action.get(key)).getTargetId());
-					}
-				} else {
-					Direction direction = ((DirectedAction) action.get(key)).getDirection();
-					newState.moveUnit(newState.getUnit(key), direction);
-				}
+				Direction direction = ((DirectedAction) action.get(key)).getDirection();
+				newState.moveUnit(newState.getUnit(key), direction);
 			}
 
 			// isStateValid(newState);
-			return new GameState(newState.getView(this.stateView.getPlayerNumbers()[0]));
+			return newState;
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -255,13 +259,11 @@ public class GameState {
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
 		for (Map<Integer, Action> action : getActionPairs()) {
-			GameState state = executeAction(action);
-			if (state == null) {
-				continue;
-			}
+			GameState state = new GameState(executeAction(action));
 			childrenList.add(new GameStateChild(action, state));
 		}
 
+		Collections.reverse(childrenList);
 		return childrenList;
 	}
 }
