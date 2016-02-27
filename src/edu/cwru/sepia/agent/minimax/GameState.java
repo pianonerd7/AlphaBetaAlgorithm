@@ -2,13 +2,14 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.action.DirectedAction;
+import edu.cwru.sepia.action.TargetedAction;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Unit;
 import edu.cwru.sepia.util.Direction;
@@ -24,9 +25,9 @@ import edu.cwru.sepia.util.Direction;
 public class GameState {
 
 	public State.StateView stateView;
-	public State state;
 	public List<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
 	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
+	public Collection<Unit.UnitView> units;
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -53,24 +54,16 @@ public class GameState {
 	 */
 	public GameState(State.StateView state) {
 		this.stateView = state;
-		populatePlayers();
+
+		// units = state;
+		populatePlayers(state);
 	}
 
-	public GameState(State state, List<Unit.UnitView> archers, List<Unit.UnitView> footmen) {
-		this.state = state;
-		parseState(archers, footmen);
-	}
+	private void populatePlayers(State.StateView state) {
 
-	private void parseState(List<Unit.UnitView> archers, List<Unit.UnitView> footmen) {
+		Collection<Unit.UnitView> units = state.getAllUnits();
 
-		for (Unit.UnitView footman : footmen) {
-			this.footmen.add(state.getUnit(footman.getID()));
-		}
-	}
-
-	private void populatePlayers() {
-
-		for (Unit.UnitView unit : stateView.getAllUnits()) {
+		for (Unit.UnitView unit : units) {
 			if (unit.getTemplateView().getName().equals("Archer")) {
 				this.archers.add(unit);
 			}
@@ -78,6 +71,7 @@ public class GameState {
 				this.footmen.add(unit);
 			}
 		}
+		System.out.println("");
 	}
 
 	private ArrayList<Action> getAction(Unit.UnitView unit) {
@@ -91,8 +85,7 @@ public class GameState {
 
 			if (isLocationValid(unit.getXPosition() + direction.xComponent(),
 					unit.getYPosition() + direction.yComponent())) {
-				// System.out.println("x: " + direction.xComponent() + "y: " +
-				// direction.yComponent());
+				System.out.println("x: " + direction.xComponent() + "y: " + direction.yComponent());
 				legalActions.add(Action.createPrimitiveMove(unit.getID(), direction));
 			}
 		}
@@ -111,16 +104,15 @@ public class GameState {
 		int range = unit.getTemplateView().getRange();
 
 		if (MinimaxAlphaBeta.isMaxTurn) {
-			attackables = getAttackableEnemyList(unit, archers, range);
+			attackables = getEnemyList(unit, archers, range);
 		} else {
-			attackables = getAttackableEnemyList(unit, footmen, range);
+			attackables = getEnemyList(unit, footmen, range);
 		}
 
 		return attackables;
 	}
 
-	private ArrayList<Unit.UnitView> getAttackableEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies,
-			int range) {
+	private ArrayList<Unit.UnitView> getEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies, int range) {
 
 		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
 
@@ -178,19 +170,33 @@ public class GameState {
 		return actionPairs;
 	}
 
-	private State executeAction(Map<Integer, Action> action) {
+	private GameState executeAction(Map<Integer, Action> action) {
 
 		try {
 			State newState = this.stateView.getStateCreator().createState();
 
 			for (int key : action.keySet()) {
 
-				Direction direction = ((DirectedAction) action.get(key)).getDirection();
-				newState.moveUnit(newState.getUnit(key), direction);
+				if (action.get(key) instanceof TargetedAction) {
+
+					Unit beingAttacked = newState.getUnit(((TargetedAction) action.get(key)).getTargetId());
+					beingAttacked.setHP(
+							beingAttacked.getCurrentHealth() - newState.getUnit(key).getTemplate().getBasicAttack());
+
+					if (beingAttacked.getCurrentHealth() < 1) {
+						newState.removeUnit(((TargetedAction) action.get(key)).getTargetId());
+					}
+				} else {
+					Direction direction = ((DirectedAction) action.get(key)).getDirection();
+					newState.moveUnit(newState.getUnit(key), direction);
+				}
 			}
 
 			// isStateValid(newState);
-			return newState;
+
+			State.StateView s = newState.getView(this.stateView.getPlayerNumbers()[0]);
+			GameState g = new GameState(s);
+			return g;
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -259,11 +265,15 @@ public class GameState {
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
 		for (Map<Integer, Action> action : getActionPairs()) {
-			GameState state = new GameState(executeAction(action));
-			childrenList.add(new GameStateChild(action, state));
+			GameState newState = executeAction(action);
+
+			if (newState == null) {
+				continue;
+			}
+
+			childrenList.add(new GameStateChild(action, newState));
 		}
 
-		Collections.reverse(childrenList);
 		return childrenList;
 	}
 }
