@@ -27,7 +27,8 @@ public class GameState {
 	public State.StateView stateView;
 	public List<Unit.UnitView> archers = new ArrayList<Unit.UnitView>();
 	public List<Unit.UnitView> footmen = new ArrayList<Unit.UnitView>();
-	public Collection<Unit.UnitView> units;
+	public Map<Integer, Integer> footmenIDHP = new HashMap<Integer, Integer>();
+	public Map<Integer, Integer> archerIDHP = new HashMap<Integer, Integer>();
 
 	/**
 	 * You will implement this constructor. It will extract all of the needed
@@ -54,9 +55,16 @@ public class GameState {
 	 */
 	public GameState(State.StateView state) {
 		this.stateView = state;
-
-		// units = state;
 		populatePlayers(state);
+	}
+
+	public GameState(State.StateView state, List<Unit.UnitView> archers, List<Unit.UnitView> footmen,
+			Map<Integer, Integer> footmenIDHP, Map<Integer, Integer> archerIDHP) {
+		this.stateView = state;
+		this.archers = archers;
+		this.footmen = footmen;
+		this.footmenIDHP = footmenIDHP;
+		this.archerIDHP = archerIDHP;
 	}
 
 	private void populatePlayers(State.StateView state) {
@@ -66,12 +74,13 @@ public class GameState {
 		for (Unit.UnitView unit : units) {
 			if (unit.getTemplateView().getName().equals("Archer")) {
 				this.archers.add(unit);
+				footmenIDHP.put(unit.getID(), unit.getHP());
 			}
 			if (unit.getTemplateView().getName().equals("Footman")) {
 				this.footmen.add(unit);
+				archerIDHP.put(unit.getID(), unit.getHP());
 			}
 		}
-		System.out.println("");
 	}
 
 	private ArrayList<Action> getAction(Unit.UnitView unit) {
@@ -112,7 +121,8 @@ public class GameState {
 		return attackables;
 	}
 
-	private ArrayList<Unit.UnitView> getAttackableEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies, int range) {
+	private ArrayList<Unit.UnitView> getAttackableEnemyList(Unit.UnitView unit, List<Unit.UnitView> enemies,
+			int range) {
 
 		ArrayList<Unit.UnitView> attackables = new ArrayList<Unit.UnitView>();
 
