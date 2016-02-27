@@ -464,7 +464,22 @@ public class GameState {
 		List<Map<Integer, Action>> act = getActionPairs();
 		for (Map<Integer, Action> action : act) {
 			GameState gs = executeAction(action);
-			childrenList.add(new GameStateChild(action, gs));
+			GameStateChild newChild = new GameStateChild(action, gs);
+			childrenList.add(newChild);
+
+			System.out.println("gs: " + gs.footmenLocation.toString());
+			System.out.println("newChild: " + newChild.state.footmenLocation.toString());
+			for (int i = 0; i < childrenList.size(); i++) {
+				System.out.println("childlist: " + childrenList.get(i).state.footmenLocation.toString());
+			}
+
+			System.out.println("\n\n");
+		}
+
+		System.out.println("\n\n ");
+
+		for (int i = 0; i < childrenList.size(); i++) {
+			System.out.println("childlist: " + childrenList.get(i).state.footmenLocation.toString());
 		}
 
 		return childrenList;
