@@ -361,14 +361,13 @@ public class GameState {
 		// footmen's turn
 		if (MinimaxAlphaBeta.isMaxTurn) {
 			Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
-			GameState newState = new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP,
-					archerHP, allUnits, footmenAttackRange, archerAttackRange);
+			return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
+					allUnits, footmenAttackRange, archerAttackRange);
 		} else {
 			Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
-			GameState newState = new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP,
-					archerHP, allUnits, footmenAttackRange, archerAttackRange);
+			return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
+					allUnits, footmenAttackRange, archerAttackRange);
 		}
-		return null;
 	}
 
 	private Map<Integer, MapLocation> updateLocation(List<MapLocation> me, List<Direction> myDir, List<Integer> id) {
