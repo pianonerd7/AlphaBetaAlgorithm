@@ -426,7 +426,9 @@ public class GameState {
 
 				isAttack = true;
 
-				int enemyId = action.get(key).getUnitId();
+				TargetedAction targetedAction = (TargetedAction) action.get(key);
+
+				int enemyId = targetedAction.getTargetId();
 				int hp;
 
 				// footman attacking archer
@@ -587,10 +589,10 @@ public class GameState {
 			GameStateChild newChild = new GameStateChild(action, gs);
 			childrenList.add(newChild);
 
-			System.out.println("gs: " + gs.footmenLocation.toString());
-			System.out.println("newChild: " + newChild.state.footmenLocation.toString());
+			System.out.println("gs: " + gs.archerLocation.toString());
+			System.out.println("newChild: " + newChild.state.archerLocation.toString());
 			for (int i = 0; i < childrenList.size(); i++) {
-				System.out.println("childlist: " + childrenList.get(i).state.footmenLocation.toString());
+				System.out.println(i + " childlist: " + childrenList.get(i).state.archerLocation.toString());
 			}
 
 			System.out.println("\n\n");
