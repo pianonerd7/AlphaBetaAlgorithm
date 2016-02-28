@@ -57,6 +57,7 @@ public class GameState {
 	public int archerAttackRange;
 	public int footmenAttackPt;
 	public int archerAttackPt;
+	public double lifeExpectancy;
 
 	Collection<Unit.UnitView> allUnits;
 
@@ -91,7 +92,8 @@ public class GameState {
 	public GameState(State.StateView state, Map<Integer, MapLocation> footmenLocation,
 			Map<Integer, MapLocation> archerLocation, List<Integer> footmenID, List<Integer> archerID,
 			Map<Integer, Integer> footmenHP, Map<Integer, Integer> archerHP, Collection<Unit.UnitView> allUnits,
-			int footmenAttackRange, int archerAttackRange, int footmenAttackPt, int archerAttackpt) {
+			int footmenAttackRange, int archerAttackRange, int footmenAttackPt, int archerAttackpt,
+			double lifeExpectancy) {
 		this.stateView = state;
 		this.footmenLocation = footmenLocation;
 		this.archerLocation = archerLocation;
@@ -103,6 +105,7 @@ public class GameState {
 		this.archerAttackRange = archerAttackRange;
 		this.footmenAttackPt = footmenAttackPt;
 		this.archerAttackPt = archerAttackpt;
+		this.lifeExpectancy = lifeExpectancy;
 	}
 
 	private void populatePlayers(State.StateView state) {
@@ -357,6 +360,7 @@ public class GameState {
 		List<Integer> newArcherID = new ArrayList<Integer>();
 		Map<Integer, Integer> newFootmenHP = new HashMap<Integer, Integer>();
 		Map<Integer, Integer> newArcherHP = new HashMap<Integer, Integer>();
+		double newLifeExpectancy = 0.0;
 
 		// clone all objects
 		for (Integer newFootmenKey : footmenLocation.keySet()) {
@@ -445,6 +449,10 @@ public class GameState {
 								newArcherID.remove(i);
 							}
 						}
+
+						if (newArcherHP.size() == 0) {
+							newLifeExpectancy = Double.MAX_VALUE;
+						}
 					} else {
 						newArcherHP.remove(enemyId);
 						newArcherHP.put(enemyId, hp);
@@ -462,6 +470,10 @@ public class GameState {
 								newFootmenID.remove(i);
 							}
 						}
+
+						if (newFootmenHP.size() == 0) {
+							newLifeExpectancy = Double.MIN_VALUE;
+						}
 					} else {
 						newFootmenHP.remove(enemyId);
 						newFootmenHP.put(enemyId, hp);
@@ -475,18 +487,20 @@ public class GameState {
 			if (MinimaxAlphaBeta.isMaxTurn) {
 				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
-						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
+						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
+						newLifeExpectancy);
 			} else {
 				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
-						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
+						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
+						newLifeExpectancy);
 			}
 		}
 
 		if (isAttack == 2) {
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt);
+					archerAttackPt, newLifeExpectancy);
 		} else {
 
 			if (MinimaxAlphaBeta.isMaxTurn) {
@@ -517,7 +531,7 @@ public class GameState {
 
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt);
+					archerAttackPt, newLifeExpectancy);
 		}
 	}
 

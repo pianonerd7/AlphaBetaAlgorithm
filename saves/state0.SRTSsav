@@ -768,8 +768,8 @@
         <unit>
             <ID>3</ID>
             <currentHealth>50</currentHealth>
-            <xPosition>7</xPosition>
-            <yPosition>10</yPosition>
+            <xPosition>15</xPosition>
+            <yPosition>15</yPosition>
             <templateID>55</templateID>
             <cargoAmount>0</cargoAmount>
             <progressAmount>0</progressAmount>
@@ -777,8 +777,8 @@
         <unit>
             <ID>4</ID>
             <currentHealth>50</currentHealth>
-            <xPosition>8</xPosition>
-            <yPosition>14</yPosition>
+            <xPosition>18</xPosition>
+            <yPosition>10</yPosition>
             <templateID>55</templateID>
             <cargoAmount>0</cargoAmount>
             <progressAmount>0</progressAmount>

@@ -16,6 +16,7 @@ public class HeuristicUtility {
 
 	private double distanceBetween() {
 
+		double total = 0;
 		double min = Double.MAX_VALUE;
 
 		for (Integer fkey : gameState.footmenLocation.keySet()) {
@@ -27,8 +28,9 @@ public class HeuristicUtility {
 					min = dist;
 				}
 			}
+			total = total + min;
 		}
-		return 100 - min;
+		return 100 - total;
 	}
 
 	private double minDistance(MapLocation me, MapLocation enemy) {

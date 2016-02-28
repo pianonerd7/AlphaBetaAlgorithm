@@ -78,7 +78,8 @@ public class MinimaxAlphaBeta extends Agent {
 	 */
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
 
-		if (depth == 0) {
+		if (node.state.lifeExpectancy == Double.MIN_NORMAL || node.state.lifeExpectancy == Double.MAX_VALUE
+				|| depth == 0) {
 			return node;
 		}
 
