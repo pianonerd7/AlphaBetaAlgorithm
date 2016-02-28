@@ -348,8 +348,8 @@ public class GameState {
 		List<MapLocation> me = new ArrayList<MapLocation>();
 		List<Direction> myDir = new ArrayList<Direction>();
 		List<Integer> id = new ArrayList<Integer>();
-		boolean isDist = false;
-		boolean isAttack = false;
+		int isDist = 0;
+		int isAttack = 0;
 
 		Map<Integer, MapLocation> newFootmenLocation = new HashMap<Integer, MapLocation>();
 		Map<Integer, MapLocation> newArcherLocation = new HashMap<Integer, MapLocation>();
@@ -391,7 +391,7 @@ public class GameState {
 
 			if (action.get(key) instanceof DirectedAction) {
 
-				isDist = true;
+				isDist++;
 
 				if (MinimaxAlphaBeta.isMaxTurn) {
 
@@ -424,7 +424,7 @@ public class GameState {
 
 			if (action.get(key) instanceof TargetedAction) {
 
-				isAttack = true;
+				isAttack++;
 
 				TargetedAction targetedAction = (TargetedAction) action.get(key);
 
@@ -470,49 +470,55 @@ public class GameState {
 			}
 		}
 
-		if (isDist) {
+		if (isDist == 2) {
 			// footmen's turn
 			if (MinimaxAlphaBeta.isMaxTurn) {
 				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
+				return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
+						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
+			} else {
+				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
+				return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
+						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
+			}
+		}
 
-				for (Integer newFootmanKey : newFootmenLoc.keySet()) {
+		if (isAttack == 2) {
+			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
+					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
+					archerAttackPt);
+		} else {
 
-					MapLocation newLoc = newFootmenLocation.get(newFootmanKey);
+			if (MinimaxAlphaBeta.isMaxTurn) {
+				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
 
-					if (newLoc != null) {
-						newArcherLocation.remove(newFootmanKey);
+				for (Integer key : newFootmenLoc.keySet()) {
 
-						MapLocation ml = new MapLocation(newFootmenLoc.get(newFootmanKey).x,
-								newFootmenLoc.get(newFootmanKey).y);
-						newArcherLocation.put(newFootmanKey, ml);
+					MapLocation loc = newFootmenLocation.get(key);
+
+					if (loc != null) {
+						newFootmenLocation.get(key).x = newFootmenLoc.get(key).x;
+						newFootmenLocation.get(key).y = newFootmenLoc.get(key).y;
 					}
 				}
-
-				// return new GameState(stateView, newFootmenLoc,
-				// archerLocation, footmenID, archerID, footmenHP, archerHP,
-				// allUnits, footmenAttackRange, archerAttackRange,
-				// footmenAttackPt, archerAttackPt);
 			} else {
 				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
 
-				for (Integer newArcherKey : newArcherLoc.keySet()) {
+				for (Integer key : newArcherLoc.keySet()) {
 
-					MapLocation newLoc = newArcherLocation.get(newArcherKey);
+					MapLocation loc = newArcherLocation.get(key);
 
-					if (newLoc != null) {
-						newArcherLocation.remove(newArcherKey);
-
-						MapLocation ml = new MapLocation(newArcherLoc.get(newArcherKey).x,
-								newArcherLoc.get(newArcherKey).y);
-						newArcherLocation.put(newArcherKey, ml);
+					if (loc != null) {
+						newArcherLocation.get(key).x = newArcherLoc.get(key).x;
+						newArcherLocation.get(key).y = newArcherLoc.get(key).y;
 					}
 				}
 			}
 
+			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
+					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
+					archerAttackPt);
 		}
-
-		return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID, newFootmenHP,
-				newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt);
 	}
 
 	private Map<Integer, MapLocation> updateLocation(List<MapLocation> me, List<Direction> myDir, List<Integer> id) {
@@ -615,7 +621,11 @@ public class GameState {
 			System.out.println("gs: " + gs.footmenLocation.toString());
 			System.out.println("newChild: " + newChild.state.footmenLocation.toString());
 			for (int i = 0; i < childrenList.size(); i++) {
-				System.out.println(i + " childlist: " + childrenList.get(i).state.footmenLocation.toString());
+				System.out.println(i + " , footmen childlist: " + childrenList.get(i).state.footmenLocation.toString());
+			}
+
+			for (int i = 0; i < childrenList.size(); i++) {
+				System.out.println(i + " , archer childlist: " + childrenList.get(i).state.archerLocation.toString());
 			}
 
 			System.out.println("\n\n");
