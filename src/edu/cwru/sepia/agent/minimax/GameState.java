@@ -161,6 +161,16 @@ public class GameState {
 						enemyId = key;
 					}
 				}
+			} else {
+
+				for (Integer key : footmenLocation.keySet()) {
+
+					MapLocation loc = footmenLocation.get(key);
+
+					if (loc.x == enemy.x && loc.y == enemy.y) {
+						enemyId = key;
+					}
+				}
 			}
 
 			legalActions.add(Action.createPrimitiveAttack(id, enemyId));
@@ -248,7 +258,8 @@ public class GameState {
 		} else {
 
 			for (Integer key : archerLocation.keySet()) {
-				actions.add(getAction(key, archerLocation.get(key)));
+				MapLocation ml = archerLocation.get(key);
+				actions.add(getAction(key, ml));
 			}
 		}
 
