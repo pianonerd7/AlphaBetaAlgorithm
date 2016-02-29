@@ -80,6 +80,11 @@ public class AStarSearch {
 			iter = iter.cameFrom;
 		}
 		// to remove start
+
+		if (path.isEmpty()) {
+			return path;
+		}
+
 		path.pop();
 
 		return path;

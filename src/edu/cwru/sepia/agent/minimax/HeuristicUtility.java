@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import edu.cwru.sepia.action.Action;
+import edu.cwru.sepia.action.DirectedAction;
 import edu.cwru.sepia.environment.model.state.ResourceNode;
 
 public class HeuristicUtility {
@@ -211,42 +212,49 @@ public class HeuristicUtility {
 
 		double aStarUtility = 0.0;
 
-		AStarSearch aStar = new AStarSearch();
-		Stack<MapLocation> path = aStar.AstarSearch(start, goal, xExtent, yExtent, null, getResources());
-
 		Map<Integer, Action> action = gameState.gAction;
-		MapLocation nextLocation = path.pop();
 
 		if (action == null) {
 			return 0;
 		}
 
-		System.out.println("begin h action print");
-		for (Integer key : action.keySet()) {
-			System.out.println(action.get(key).toString());
-		}
-
-		System.out.println("\n");
-
 		// clone start location
-		MapLocation hypotheticalLoc = new MapLocation(start.x, start.y);
-
+		MapLocation originalStart = new MapLocation(start.x, start.y);
 		Action footmanAction = action.get(footmanKey);
 
-		if (footmanAction.toString().contains("NORTH")) {
-			hypotheticalLoc.y -= 1;
-		} else if (footmanAction.toString().contains("EAST")) {
-			hypotheticalLoc.x += 1;
-		} else if (footmanAction.toString().contains("SOUTH")) {
-			hypotheticalLoc.y += 1;
-		} else {// WEST
-			hypotheticalLoc.x -= 1;
+		if (footmanAction instanceof DirectedAction) {
+			originalStart = getOriginalLocation(start, footmanAction, originalStart);
+		} else {
+			originalStart = start;
 		}
 
-		if (nextLocation.x == hypotheticalLoc.x && nextLocation.y == hypotheticalLoc.y) {
+		AStarSearch aStar = new AStarSearch();
+		Stack<MapLocation> path = aStar.AstarSearch(originalStart, goal, xExtent, yExtent, null, getResources());
+
+		if (path.isEmpty()) {
+			return 500;
+		}
+
+		MapLocation nextLocation = path.pop();
+
+		if (nextLocation.x == start.x && nextLocation.y == start.y) {
 			aStarUtility = 500;
 		}
 
 		return aStarUtility;
+	}
+
+	private MapLocation getOriginalLocation(MapLocation start, Action action, MapLocation newStart) {
+
+		if (action.toString().contains("NORTH")) {
+			newStart.y += 1;
+		} else if (action.toString().contains("EAST")) {
+			newStart.x -= 1;
+		} else if (action.toString().contains("SOUTH")) {
+			newStart.y -= 1;
+		} else {// WEST
+			newStart.x += 1;
+		}
+		return newStart;
 	}
 }
