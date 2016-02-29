@@ -58,6 +58,7 @@ public class GameState {
 	public int footmenAttackPt;
 	public int archerAttackPt;
 	public double lifeExpectancy;
+	public double utility = 0.0;
 
 	Collection<Unit.UnitView> allUnits;
 
@@ -602,7 +603,10 @@ public class GameState {
 	 */
 	public double getUtility() {
 
-		return new HeuristicUtility(this).getHeuristic();
+		// return new HeuristicUtility(this).getHeuristic();
+		HeuristicUtility util = new HeuristicUtility(this);
+		this.utility = util.getHeuristic();
+		return this.utility;
 	}
 
 	/**
@@ -632,17 +636,20 @@ public class GameState {
 			GameStateChild newChild = new GameStateChild(action, gs);
 			childrenList.add(newChild);
 
-			System.out.println("gs: " + gs.footmenLocation.toString());
-			System.out.println("newChild: " + newChild.state.footmenLocation.toString());
-			for (int i = 0; i < childrenList.size(); i++) {
-				System.out.println(i + " , footmen childlist: " + childrenList.get(i).state.footmenLocation.toString());
-			}
-
-			for (int i = 0; i < childrenList.size(); i++) {
-				System.out.println(i + " , archer childlist: " + childrenList.get(i).state.archerLocation.toString());
-			}
-
-			System.out.println("\n\n");
+			// System.out.println("gs: " + gs.footmenLocation.toString());
+			// System.out.println("newChild: " +
+			// newChild.state.footmenLocation.toString());
+			// for (int i = 0; i < childrenList.size(); i++) {
+			// System.out.println(i + " , footmen childlist: " +
+			// childrenList.get(i).state.footmenLocation.toString());
+			// }
+			//
+			// for (int i = 0; i < childrenList.size(); i++) {
+			// System.out.println(i + " , archer childlist: " +
+			// childrenList.get(i).state.archerLocation.toString());
+			// }
+			//
+			// System.out.println("\n\n");
 		}
 		return childrenList;
 	}

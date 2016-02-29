@@ -78,7 +78,7 @@ public class MinimaxAlphaBeta extends Agent {
 	 */
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
 
-		if (node.state.lifeExpectancy == Double.MIN_NORMAL || node.state.lifeExpectancy == Double.MAX_VALUE
+		if (node.state.lifeExpectancy == Double.MIN_VALUE || node.state.lifeExpectancy == Double.MAX_VALUE
 				|| depth == 0) {
 			return node;
 		}
@@ -87,7 +87,7 @@ public class MinimaxAlphaBeta extends Agent {
 		double val;
 
 		if (isMaxTurn) {
-			val = Double.MIN_VALUE;
+			val = Double.NEGATIVE_INFINITY;
 
 			List<GameStateChild> orderedChildren = orderChildrenWithHeuristics(node.state.getChildren());
 			for (GameStateChild child : orderedChildren) {
@@ -104,7 +104,7 @@ public class MinimaxAlphaBeta extends Agent {
 				}
 			}
 		} else {
-			val = Double.MAX_VALUE;
+			val = Double.POSITIVE_INFINITY;
 
 			for (GameStateChild child : node.state.getChildren()) {
 
@@ -146,17 +146,19 @@ public class MinimaxAlphaBeta extends Agent {
 		List<GameStateChild> orderedChildren = new ArrayList<GameStateChild>();
 
 		for (int i = 0; i < children.size(); i++) {
-			double max = Double.MIN_VALUE;
+			double max = Double.NEGATIVE_INFINITY;
 			GameStateChild bestChild = null;
 			for (int j = 0; j < children.size(); j++) {
 
 				double utility = children.get(j).state.getUtility();
+				System.out.println("in minimax " + utility);
+
 				if (utility > max) {
 					max = utility;
 					bestChild = children.get(j);
 				}
 			}
-			System.out.println(bestChild.state.getUtility());
+			// System.out.println(bestChild.state.getUtility());
 			orderedChildren.add(bestChild);
 			children.remove(bestChild);
 		}
