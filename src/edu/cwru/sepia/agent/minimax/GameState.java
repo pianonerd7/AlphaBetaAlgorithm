@@ -39,6 +39,7 @@ public class GameState {
 	public int archerAttackPt;
 	public double lifeExpectancy;
 	public double utility;
+	public Map<Integer, Action> gAction;
 
 	Collection<Unit.UnitView> allUnits;
 
@@ -68,13 +69,16 @@ public class GameState {
 	public GameState(State.StateView state) {
 		this.stateView = state;
 		populatePlayers(state);
+
+		HeuristicUtility util = new HeuristicUtility(this);
+		this.utility += util.getHeuristic();
 	}
 
 	public GameState(State.StateView state, Map<Integer, MapLocation> footmenLocation,
 			Map<Integer, MapLocation> archerLocation, List<Integer> footmenID, List<Integer> archerID,
 			Map<Integer, Integer> footmenHP, Map<Integer, Integer> archerHP, Collection<Unit.UnitView> allUnits,
 			int footmenAttackRange, int archerAttackRange, int footmenAttackPt, int archerAttackpt,
-			double lifeExpectancy, double utility) {
+			double lifeExpectancy, double utility, Map<Integer, Action> action) {
 		this.stateView = state;
 		this.footmenLocation = footmenLocation;
 		this.archerLocation = archerLocation;
@@ -88,6 +92,10 @@ public class GameState {
 		this.archerAttackPt = archerAttackpt;
 		this.lifeExpectancy = lifeExpectancy;
 		this.utility = utility;
+		this.gAction = action;
+
+		HeuristicUtility util = new HeuristicUtility(this);
+		this.utility += util.getHeuristic();
 	}
 
 	private void populatePlayers(State.StateView state) {
@@ -475,19 +483,19 @@ public class GameState {
 				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
 						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
-						newLifeExpectancy, newUtility);
+						newLifeExpectancy, newUtility, action);
 			} else {
 				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
 						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
-						newLifeExpectancy, newUtility);
+						newLifeExpectancy, newUtility, action);
 			}
 		}
 
 		if (isAttack == 2) {
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt, newLifeExpectancy, newUtility);
+					archerAttackPt, newLifeExpectancy, newUtility, action);
 		} else {
 
 			if (MinimaxAlphaBeta.isMaxTurn) {
@@ -518,7 +526,7 @@ public class GameState {
 
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt, newLifeExpectancy, newUtility);
+					archerAttackPt, newLifeExpectancy, newUtility, action);
 		}
 	}
 
@@ -590,8 +598,6 @@ public class GameState {
 	public double getUtility() {
 
 		// return new HeuristicUtility(this).getHeuristic();
-		HeuristicUtility util = new HeuristicUtility(this);
-		this.utility += util.getHeuristic();
 		return this.utility;
 	}
 

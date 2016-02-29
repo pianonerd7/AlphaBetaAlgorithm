@@ -2,16 +2,23 @@ package edu.cwru.sepia.agent.minimax;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
+import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.environment.model.state.ResourceNode;
 
 public class HeuristicUtility {
 
 	private GameState gameState;
+	private int xExtent;
+	private int yExtent;
 
 	public HeuristicUtility(GameState state) {
 		this.gameState = state;
+		xExtent = gameState.stateView.getXExtent();
+		yExtent = gameState.stateView.getYExtent();
 	}
 
 	public double getHeuristic() {
@@ -19,7 +26,7 @@ public class HeuristicUtility {
 		double heuristicEstimate = 0.0;
 		heuristicEstimate += distanceUtility();
 		heuristicEstimate += hpUtility();
-		heuristicEstimate += resourceUtility();
+		// System.out.println(heuristicEstimate);
 		return heuristicEstimate;
 	}
 
@@ -44,12 +51,19 @@ public class HeuristicUtility {
 				}
 			}
 
-			distUtility += tempBest;
+			// distUtility += tempBest;
+			distUtility += aStarSearch(footman1, gameState.archerLocation.get(index), gameState.footmenID.get(0),
+					index);
+
 			for (Integer key : gameState.archerLocation.keySet()) {
 
 				if (key != index) {
-					distUtility += getDistance(gameState.footmenLocation.get(gameState.footmenID.get(1)),
-							gameState.archerLocation.get(key));
+					// distUtility +=
+					// getDistance(gameState.footmenLocation.get(gameState.footmenID.get(1)),
+					// gameState.archerLocation.get(key));
+
+					distUtility += aStarSearch(gameState.footmenLocation.get(gameState.footmenID.get(1)),
+							gameState.archerLocation.get(key), gameState.footmenID.get(1), key);
 				}
 			}
 
@@ -64,6 +78,7 @@ public class HeuristicUtility {
 			MapLocation footman1 = gameState.footmenLocation.get(gameState.footmenID.get(0));
 			MapLocation footman2 = gameState.footmenLocation.get(gameState.footmenID.get(1));
 			MapLocation archer = null;
+			int index = -1;
 
 			for (Integer key : gameState.archerLocation.keySet()) {
 
@@ -71,11 +86,15 @@ public class HeuristicUtility {
 
 				if (temp != null) {
 					archer = temp;
+					index = key;
 				}
 			}
 
-			distUtility += getDistance(footman1, archer);
-			distUtility += getDistance(footman2, archer);
+			// distUtility += getDistance(footman1, archer);
+			// distUtility += getDistance(footman2, archer);
+
+			distUtility += aStarSearch(footman1, archer, gameState.footmenID.get(0), index);
+			distUtility += aStarSearch(footman2, archer, gameState.footmenID.get(1), index);
 
 			// add bonus for killing one archer and keeping both agent alive
 			// distUtility += 200;
@@ -84,6 +103,7 @@ public class HeuristicUtility {
 			MapLocation archer1 = gameState.archerLocation.get(gameState.archerID.get(0));
 			MapLocation archer2 = gameState.archerLocation.get(gameState.archerID.get(1));
 			MapLocation footman = null;
+			int index = -1;
 
 			for (Integer key : gameState.footmenLocation.keySet()) {
 
@@ -91,17 +111,22 @@ public class HeuristicUtility {
 
 				if (temp != null) {
 					footman = temp;
+					index = key;
 				}
 			}
 
-			distUtility += getDistance(archer1, footman);
-			distUtility += getDistance(archer2, footman);
+			// distUtility += getDistance(archer1, footman);
+			// distUtility += getDistance(archer2, footman);
 
+			distUtility += aStarSearch(footman, archer1, index, gameState.archerID.get(0));
+			distUtility += aStarSearch(footman, archer2, index, gameState.archerID.get(1));
 			// distUtility -= 200;
 
 		} else if (numFootmen == 1 && numArchers == 1) {
 			MapLocation footman = null;
 			MapLocation archer = null;
+			int fIndex = -1;
+			int aIndex = -1;
 
 			for (Integer key : gameState.footmenLocation.keySet()) {
 
@@ -109,6 +134,7 @@ public class HeuristicUtility {
 
 				if (temp != null) {
 					footman = temp;
+					fIndex = key;
 				}
 			}
 
@@ -118,13 +144,15 @@ public class HeuristicUtility {
 
 				if (temp != null) {
 					archer = temp;
+					aIndex = key;
 				}
 			}
 
-			distUtility += getDistance(archer, footman);
+			distUtility += aStarSearch(footman, archer, fIndex, aIndex);
+			// distUtility += getDistance(archer, footman);
 		}
 
-		return -2 * distUtility;
+		return distUtility;
 	}
 
 	private double getDistance(MapLocation me, MapLocation enemy) {
@@ -166,9 +194,7 @@ public class HeuristicUtility {
 		return (archers - footmen);
 	}
 
-	private double resourceUtility() {
-
-		double resourceUtility = 0.0;
+	private Set<MapLocation> getResources() {
 
 		List<Integer> resourceIDs = gameState.stateView.getAllResourceIds();
 		Set<MapLocation> resourceLocations = new HashSet<MapLocation>();
@@ -178,6 +204,49 @@ public class HeuristicUtility {
 			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition()));
 		}
 
-		return resourceUtility;
+		return resourceLocations;
+	}
+
+	private double aStarSearch(MapLocation start, MapLocation goal, int footmanKey, int archerKey) {
+
+		double aStarUtility = 0.0;
+
+		AStarSearch aStar = new AStarSearch();
+		Stack<MapLocation> path = aStar.AstarSearch(start, goal, xExtent, yExtent, null, getResources());
+
+		Map<Integer, Action> action = gameState.gAction;
+		MapLocation nextLocation = path.pop();
+
+		if (action == null) {
+			return 0;
+		}
+
+		System.out.println("begin h action print");
+		for (Integer key : action.keySet()) {
+			System.out.println(action.get(key).toString());
+		}
+
+		System.out.println("\n");
+
+		// clone start location
+		MapLocation hypotheticalLoc = new MapLocation(start.x, start.y);
+
+		Action footmanAction = action.get(footmanKey);
+
+		if (footmanAction.toString().contains("NORTH")) {
+			hypotheticalLoc.y -= 1;
+		} else if (footmanAction.toString().contains("EAST")) {
+			hypotheticalLoc.x += 1;
+		} else if (footmanAction.toString().contains("SOUTH")) {
+			hypotheticalLoc.y += 1;
+		} else {// WEST
+			hypotheticalLoc.x -= 1;
+		}
+
+		if (nextLocation.x == hypotheticalLoc.x && nextLocation.y == hypotheticalLoc.y) {
+			aStarUtility = 500;
+		}
+
+		return aStarUtility;
 	}
 }
