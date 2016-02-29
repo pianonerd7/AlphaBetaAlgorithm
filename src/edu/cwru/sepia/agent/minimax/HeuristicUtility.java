@@ -146,10 +146,6 @@ public class HeuristicUtility {
 			if (gameState.footmenID.size() < 2) {
 				hpUtility -= 10000;
 			}
-		} else {
-			if (gameState.archerID.size() < 2) {
-				hpUtility += 10000;
-			}
 		}
 
 		// for (Unit.UnitView unit : gameState.stateView.getAllUnits()) {

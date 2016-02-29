@@ -15,7 +15,7 @@ import edu.cwru.sepia.environment.model.state.State;
 public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
-	public static boolean isMaxTurn = true;
+	public static boolean isMaxTurn = false;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);
@@ -35,6 +35,7 @@ public class MinimaxAlphaBeta extends Agent {
 
 	@Override
 	public Map<Integer, Action> middleStep(State.StateView newstate, History.HistoryView statehistory) {
+		this.isMaxTurn = false;
 		GameStateChild bestChild = alphaBetaSearch(new GameStateChild(newstate), numPlys, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY);
 
@@ -84,14 +85,15 @@ public class MinimaxAlphaBeta extends Agent {
 			return node;
 		}
 
+		isMaxTurn = !isMaxTurn;
+
 		GameStateChild bestNode = null;
 		double val;
 
 		if (isMaxTurn) {
 			val = Double.NEGATIVE_INFINITY;
 
-			List<GameStateChild> orderedChildren = orderChildrenWithHeuristics(node.state.getChildren());
-			for (GameStateChild child : orderedChildren) {
+			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
 
 				if (child.state.getUtility() > val) {
 					val = child.state.getUtility();
@@ -107,7 +109,7 @@ public class MinimaxAlphaBeta extends Agent {
 		} else {
 			val = Double.POSITIVE_INFINITY;
 
-			for (GameStateChild child : node.state.getChildren()) {
+			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
 
 				if (child.state.getUtility() < val) {
 					val = child.state.getUtility();
@@ -121,8 +123,6 @@ public class MinimaxAlphaBeta extends Agent {
 				}
 			}
 		}
-
-		isMaxTurn = !isMaxTurn;
 
 		return bestNode;
 	}
@@ -179,6 +179,6 @@ public class MinimaxAlphaBeta extends Agent {
 			}
 		}
 
-		child.state.utility += attackUtility;
+		child.state.utility += attackUtility * 10;
 	}
 }
