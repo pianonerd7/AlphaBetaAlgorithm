@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import edu.cwru.sepia.action.Action;
-import edu.cwru.sepia.action.ActionType;
 import edu.cwru.sepia.agent.Agent;
 import edu.cwru.sepia.environment.model.history.History;
 import edu.cwru.sepia.environment.model.state.State;
@@ -167,7 +166,6 @@ public class MinimaxAlphaBeta extends Agent {
 			GameStateChild bestChild = null;
 			for (int j = 0; j < children.size(); j++) {
 
-				// attackEnemyUtility(children.get(j));
 				double utility = children.get(j).state.getUtility();
 
 				if (utility > max) {
@@ -180,21 +178,5 @@ public class MinimaxAlphaBeta extends Agent {
 		}
 
 		return orderedChildren;
-	}
-
-	private void attackEnemyUtility(GameStateChild child) {
-
-		double attackUtility = 0.0;
-
-		List<Integer> footmenID = child.state.footmenID;
-
-		for (Integer key : child.action.keySet()) {
-
-			if (footmenID.contains(key) && child.action.get(key).getType() == ActionType.PRIMITIVEATTACK) {
-				attackUtility += child.state.footmenAttackPt;
-			}
-		}
-
-		child.state.utility += attackUtility * 10;
 	}
 }
