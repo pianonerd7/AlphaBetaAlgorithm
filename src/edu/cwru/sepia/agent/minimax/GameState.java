@@ -53,7 +53,7 @@ public class GameState {
 	public int footmenAttackPt;
 	public int archerAttackPt;
 	public double lifeExpectancy;
-	public double utility = 0.0;
+	public double utility;
 
 	Collection<Unit.UnitView> allUnits;
 
@@ -600,7 +600,7 @@ public class GameState {
 
 		// return new HeuristicUtility(this).getHeuristic();
 		HeuristicUtility util = new HeuristicUtility(this);
-		this.utility = util.getHeuristic();
+		this.utility += util.getHeuristic();
 		return this.utility;
 	}
 
@@ -629,6 +629,13 @@ public class GameState {
 		for (Map<Integer, Action> action : act) {
 			GameState gs = executeAction(action);
 			GameStateChild newChild = new GameStateChild(action, gs);
+
+			for (GameStateChild child : childrenList) {
+
+				Map<Integer, Action> cAct = child.action;
+				// if ()
+			}
+
 			childrenList.add(newChild);
 
 			// System.out.println("gs: " + gs.footmenLocation.toString());

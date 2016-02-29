@@ -11,8 +11,11 @@ public class HeuristicUtility {
 	}
 
 	public double getHeuristic() {
-		System.out.println("in heuristic " + distanceUtility());
-		return distanceUtility();
+
+		double heuristicEstimate = 0.0;
+		heuristicEstimate += distanceUtility();
+		heuristicEstimate += hpUtility();
+		return heuristicEstimate;
 	}
 
 	private double distanceUtility() {
@@ -24,7 +27,7 @@ public class HeuristicUtility {
 		if (numFootmen == 2 && numArchers == 2) {
 			MapLocation footman1 = gameState.footmenLocation.get(gameState.footmenID.get(0));
 
-			double tempBest = Double.MAX_VALUE;
+			double tempBest = Double.POSITIVE_INFINITY;
 			int index = -1;
 
 			for (Integer key : gameState.archerLocation.keySet()) {
@@ -116,19 +119,7 @@ public class HeuristicUtility {
 			distUtility += getDistance(archer, footman);
 		}
 
-		// // footmen's turn - get as high utility as possible
-		// if (MinimaxAlphaBeta.isMaxTurn) {
-		// // more distance = less utility.
-		// // i want to reward more for less distance
-		// gameState.utility += (500 - distUtility);
-		// }
-		// // archer's turn - get as low utility as possible
-		// else {
-		// // lower utility means good
-		// gameState.utility += distUtility;
-		// }
-
-		return distUtility * -2;
+		return -2 * distUtility;
 	}
 
 	private double getDistance(MapLocation me, MapLocation enemy) {
@@ -143,5 +134,42 @@ public class HeuristicUtility {
 		double c = Math.sqrt(a + b);
 
 		return c;
+	}
+
+	private double hpUtility() {
+
+		double hpUtility = 0;
+		double fFullHp = 160;
+		double aFullHp = 50;
+
+		if (MinimaxAlphaBeta.isMaxTurn) {
+			if (gameState.footmenID.size() < 2) {
+				hpUtility -= 10000;
+			}
+		} else {
+			if (gameState.archerID.size() < 2) {
+				hpUtility += 10000;
+			}
+		}
+
+		// for (Unit.UnitView unit : gameState.stateView.getAllUnits()) {
+		// if (unit.getTemplateView().getName().equals("Archer")) {
+		// aFullHp = unit.getTemplateView().getBaseHealth();
+		// } else if (unit.getTemplateView().getName().equals("Footman")) {
+		// fFullHp = unit.getTemplateView().getBaseHealth();
+		// }
+		// }
+
+		double footmen = 0.0;
+		for (Integer key : gameState.footmenHP.keySet()) {
+			footmen += fFullHp - gameState.footmenHP.get(key);
+		}
+
+		double archers = 0.0;
+		for (Integer key : gameState.archerHP.keySet()) {
+			archers += aFullHp - gameState.archerHP.get(key);
+		}
+
+		return (archers - footmen);
 	}
 }
