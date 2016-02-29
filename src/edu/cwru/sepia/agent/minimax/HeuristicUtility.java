@@ -1,6 +1,10 @@
 package edu.cwru.sepia.agent.minimax;
 
-import edu.cwru.sepia.agent.minimax.GameState.MapLocation;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import edu.cwru.sepia.environment.model.state.ResourceNode;
 
 public class HeuristicUtility {
 
@@ -15,6 +19,7 @@ public class HeuristicUtility {
 		double heuristicEstimate = 0.0;
 		heuristicEstimate += distanceUtility();
 		heuristicEstimate += hpUtility();
+		heuristicEstimate += resourceUtility();
 		return heuristicEstimate;
 	}
 
@@ -159,5 +164,20 @@ public class HeuristicUtility {
 		}
 
 		return (archers - footmen);
+	}
+
+	private double resourceUtility() {
+
+		double resourceUtility = 0.0;
+
+		List<Integer> resourceIDs = gameState.stateView.getAllResourceIds();
+		Set<MapLocation> resourceLocations = new HashSet<MapLocation>();
+		for (Integer resourceID : resourceIDs) {
+			ResourceNode.ResourceView resource = gameState.stateView.getResourceNode(resourceID);
+
+			resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition()));
+		}
+
+		return resourceUtility;
 	}
 }

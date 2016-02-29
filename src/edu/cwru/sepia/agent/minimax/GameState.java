@@ -24,21 +24,6 @@ import edu.cwru.sepia.util.Direction;
  */
 public class GameState {
 
-	class MapLocation {
-		public int x;
-		public int y;
-
-		public MapLocation(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		@Override
-		public String toString() {
-			return "x: " + x + ", y: " + y;
-		}
-	}
-
 	public State.StateView stateView;
 	// id and xy location
 	public Map<Integer, MapLocation> footmenLocation = new HashMap<Integer, MapLocation>();
