@@ -148,14 +148,6 @@ public class HeuristicUtility {
 			}
 		}
 
-		// for (Unit.UnitView unit : gameState.stateView.getAllUnits()) {
-		// if (unit.getTemplateView().getName().equals("Archer")) {
-		// aFullHp = unit.getTemplateView().getBaseHealth();
-		// } else if (unit.getTemplateView().getName().equals("Footman")) {
-		// fFullHp = unit.getTemplateView().getBaseHealth();
-		// }
-		// }
-
 		double footmen = 0.0;
 		for (Integer key : gameState.footmenHP.keySet()) {
 			footmen += fFullHp - gameState.footmenHP.get(key);

@@ -89,7 +89,7 @@ public class GameState {
 			Map<Integer, MapLocation> archerLocation, List<Integer> footmenID, List<Integer> archerID,
 			Map<Integer, Integer> footmenHP, Map<Integer, Integer> archerHP, Collection<Unit.UnitView> allUnits,
 			int footmenAttackRange, int archerAttackRange, int footmenAttackPt, int archerAttackpt,
-			double lifeExpectancy) {
+			double lifeExpectancy, double utility) {
 		this.stateView = state;
 		this.footmenLocation = footmenLocation;
 		this.archerLocation = archerLocation;
@@ -102,6 +102,7 @@ public class GameState {
 		this.footmenAttackPt = footmenAttackPt;
 		this.archerAttackPt = archerAttackpt;
 		this.lifeExpectancy = lifeExpectancy;
+		this.utility = utility;
 	}
 
 	private void populatePlayers(State.StateView state) {
@@ -357,6 +358,7 @@ public class GameState {
 		Map<Integer, Integer> newFootmenHP = new HashMap<Integer, Integer>();
 		Map<Integer, Integer> newArcherHP = new HashMap<Integer, Integer>();
 		double newLifeExpectancy = 0.0;
+		double newUtility = 0.0;
 
 		// clone all objects
 		for (Integer newFootmenKey : footmenLocation.keySet()) {
@@ -432,9 +434,10 @@ public class GameState {
 				int hp;
 
 				// footman attacking archer
-				if (MinimaxAlphaBeta.isMaxTurn) {
+				if (MinimaxAlphaBeta.isMaxTurn && newArcherHP.size() != 0) {
 					hp = newArcherHP.get(enemyId);
 					hp = hp - footmenAttackPt;
+					newUtility += footmenAttackPt * 20;
 
 					if (hp < 1) {
 						newArcherLocation.remove(enemyId);
@@ -453,9 +456,12 @@ public class GameState {
 						newArcherHP.remove(enemyId);
 						newArcherHP.put(enemyId, hp);
 					}
-				} else {// archer attacks footman
+				} else if (!MinimaxAlphaBeta.isMaxTurn && newFootmenHP.size() != 0) {// archer
+																						// attacks
+																						// footman
 					hp = newFootmenHP.get(enemyId);
 					hp = hp - archerAttackPt;
+					newUtility -= archerAttackPt * 20;
 
 					if (hp < 1) {
 						newFootmenLocation.remove(enemyId);
@@ -484,19 +490,19 @@ public class GameState {
 				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
 						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
-						newLifeExpectancy);
+						newLifeExpectancy, newUtility);
 			} else {
 				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
 						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
-						newLifeExpectancy);
+						newLifeExpectancy, newUtility);
 			}
 		}
 
 		if (isAttack == 2) {
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt, newLifeExpectancy);
+					archerAttackPt, newLifeExpectancy, newUtility);
 		} else {
 
 			if (MinimaxAlphaBeta.isMaxTurn) {
@@ -527,7 +533,7 @@ public class GameState {
 
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt, newLifeExpectancy);
+					archerAttackPt, newLifeExpectancy, newUtility);
 		}
 	}
 
@@ -630,28 +636,8 @@ public class GameState {
 			GameState gs = executeAction(action);
 			GameStateChild newChild = new GameStateChild(action, gs);
 
-			for (GameStateChild child : childrenList) {
-
-				Map<Integer, Action> cAct = child.action;
-				// if ()
-			}
-
 			childrenList.add(newChild);
 
-			// System.out.println("gs: " + gs.footmenLocation.toString());
-			// System.out.println("newChild: " +
-			// newChild.state.footmenLocation.toString());
-			// for (int i = 0; i < childrenList.size(); i++) {
-			// System.out.println(i + " , footmen childlist: " +
-			// childrenList.get(i).state.footmenLocation.toString());
-			// }
-			//
-			// for (int i = 0; i < childrenList.size(); i++) {
-			// System.out.println(i + " , archer childlist: " +
-			// childrenList.get(i).state.archerLocation.toString());
-			// }
-			//
-			// System.out.println("\n\n");
 		}
 		return childrenList;
 	}

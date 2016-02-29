@@ -35,7 +35,7 @@ public class MinimaxAlphaBeta extends Agent {
 
 	@Override
 	public Map<Integer, Action> middleStep(State.StateView newstate, History.HistoryView statehistory) {
-		this.isMaxTurn = false;
+		// this.isMaxTurn = false;
 		GameStateChild bestChild = alphaBetaSearch(new GameStateChild(newstate), numPlys, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY);
 
@@ -80,12 +80,12 @@ public class MinimaxAlphaBeta extends Agent {
 	 */
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
 
+		isMaxTurn = !isMaxTurn;
+
 		if (node.state.lifeExpectancy == Double.MIN_VALUE || node.state.lifeExpectancy == Double.MAX_VALUE
 				|| depth == 0) {
 			return node;
 		}
-
-		isMaxTurn = !isMaxTurn;
 
 		GameStateChild bestNode = null;
 		double val;
@@ -124,7 +124,23 @@ public class MinimaxAlphaBeta extends Agent {
 			}
 		}
 
+		print(bestNode);
 		return bestNode;
+	}
+
+	private void print(GameStateChild bestNode) {
+		for (Integer key : bestNode.state.footmenLocation.keySet()) {
+			System.out.println("f maplocation: " + bestNode.state.footmenLocation.get(key).toString());
+		}
+
+		for (Integer key : bestNode.state.archerLocation.keySet()) {
+			System.out.println("a maplocation: " + bestNode.state.archerLocation.get(key).toString());
+		}
+
+		for (Integer key : bestNode.action.keySet()) {
+			System.out.println("action: " + bestNode.action.get(key).toString());
+		}
+		System.out.println("\n\n");
 	}
 
 	/**
@@ -151,7 +167,7 @@ public class MinimaxAlphaBeta extends Agent {
 			GameStateChild bestChild = null;
 			for (int j = 0; j < children.size(); j++) {
 
-				attackEnemyUtility(children.get(j));
+				// attackEnemyUtility(children.get(j));
 				double utility = children.get(j).state.getUtility();
 
 				if (utility > max) {
