@@ -98,10 +98,14 @@ public class AStarSearch {
 		int x = current.x;
 		int y = current.y;
 
+		neighbors.add(new MapLocation(x - 1, y - 1, current, 1));
 		neighbors.add(new MapLocation(x, y - 1, current, 1));
+		neighbors.add(new MapLocation(x + 1, y - 1, current, 1));
 		neighbors.add(new MapLocation(x - 1, y, current, 1));
 		neighbors.add(new MapLocation(x + 1, y, current, 1));
+		neighbors.add(new MapLocation(x - 1, y + 1, current, 1));
 		neighbors.add(new MapLocation(x, y + 1, current, 1));
+		neighbors.add(new MapLocation(x + 1, y + 1, current, 1));
 
 		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
 			deleted = false;
