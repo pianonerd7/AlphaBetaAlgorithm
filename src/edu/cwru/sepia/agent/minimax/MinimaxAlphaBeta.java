@@ -15,7 +15,7 @@ public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
 	public static boolean isMaxTurn = false;
-	public static int atPly = 0;
+	public static int ply;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);
@@ -24,8 +24,8 @@ public class MinimaxAlphaBeta extends Agent {
 			System.err.println("You must specify the number of plys");
 			System.exit(1);
 		}
-
 		numPlys = Integer.parseInt(args[0]);
+		ply = numPlys;
 	}
 
 	@Override
@@ -35,7 +35,6 @@ public class MinimaxAlphaBeta extends Agent {
 
 	@Override
 	public Map<Integer, Action> middleStep(State.StateView newstate, History.HistoryView statehistory) {
-		// this.isMaxTurn = false;
 		GameStateChild bestChild = alphaBetaSearch(new GameStateChild(newstate), numPlys, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY);
 
@@ -82,8 +81,6 @@ public class MinimaxAlphaBeta extends Agent {
 
 		isMaxTurn = !isMaxTurn;
 
-		// MinimaxAlphaBeta.atPly++;
-
 		if (node.state.lifeExpectancy == Double.MIN_VALUE || node.state.lifeExpectancy == Double.MAX_VALUE
 				|| depth == 0) {
 			return node;
@@ -95,10 +92,11 @@ public class MinimaxAlphaBeta extends Agent {
 		if (isMaxTurn) {
 			val = Double.NEGATIVE_INFINITY;
 
-			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
+			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren(depth))) {
 
 				if (child.state.getUtility() > val) {
 					val = child.state.getUtility();
+
 					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
 				}
 
@@ -111,7 +109,7 @@ public class MinimaxAlphaBeta extends Agent {
 		} else {
 			val = Double.POSITIVE_INFINITY;
 
-			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
+			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren(depth))) {
 
 				if (child.state.getUtility() < val) {
 					val = child.state.getUtility();

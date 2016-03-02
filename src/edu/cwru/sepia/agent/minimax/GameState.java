@@ -40,6 +40,7 @@ public class GameState {
 	public double lifeExpectancy;
 	public double utility;
 	public Map<Integer, Action> gAction;
+	public int depth = -1;
 
 	Collection<Unit.UnitView> allUnits;
 
@@ -78,7 +79,7 @@ public class GameState {
 			Map<Integer, MapLocation> archerLocation, List<Integer> footmenID, List<Integer> archerID,
 			Map<Integer, Integer> footmenHP, Map<Integer, Integer> archerHP, Collection<Unit.UnitView> allUnits,
 			int footmenAttackRange, int archerAttackRange, int footmenAttackPt, int archerAttackpt,
-			double lifeExpectancy, double utility, Map<Integer, Action> action) {
+			double lifeExpectancy, double utility, Map<Integer, Action> action, int depth) {
 		this.stateView = state;
 		this.footmenLocation = footmenLocation;
 		this.archerLocation = archerLocation;
@@ -93,6 +94,7 @@ public class GameState {
 		this.lifeExpectancy = lifeExpectancy;
 		this.utility = utility;
 		this.gAction = action;
+		this.depth = depth;
 
 		HeuristicUtility util = new HeuristicUtility(this);
 		this.utility += util.getHeuristic();
@@ -336,7 +338,7 @@ public class GameState {
 		return actionPairs;
 	}
 
-	private GameState executeAction(Map<Integer, Action> action) {
+	private GameState executeAction(Map<Integer, Action> action, int depth) {
 
 		List<MapLocation> me = new ArrayList<MapLocation>();
 		List<Direction> myDir = new ArrayList<Direction>();
@@ -483,19 +485,19 @@ public class GameState {
 				Map<Integer, MapLocation> newFootmenLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, newFootmenLoc, archerLocation, footmenID, archerID, footmenHP, archerHP,
 						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
-						newLifeExpectancy, newUtility, action);
+						newLifeExpectancy, newUtility, action, depth);
 			} else {
 				Map<Integer, MapLocation> newArcherLoc = updateLocation(me, myDir, id);
 				return new GameState(stateView, footmenLocation, newArcherLoc, footmenID, archerID, footmenHP, archerHP,
 						allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt, archerAttackPt,
-						newLifeExpectancy, newUtility, action);
+						newLifeExpectancy, newUtility, action, depth);
 			}
 		}
 
 		if (isAttack == 2) {
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt, newLifeExpectancy, newUtility, action);
+					archerAttackPt, newLifeExpectancy, newUtility, action, depth);
 		} else {
 
 			if (MinimaxAlphaBeta.isMaxTurn) {
@@ -526,7 +528,7 @@ public class GameState {
 
 			return new GameState(stateView, newFootmenLocation, newArcherLocation, newFootmenID, newArcherID,
 					newFootmenHP, newArcherHP, allUnits, footmenAttackRange, archerAttackRange, footmenAttackPt,
-					archerAttackPt, newLifeExpectancy, newUtility, action);
+					archerAttackPt, newLifeExpectancy, newUtility, action, depth);
 		}
 	}
 
@@ -618,13 +620,13 @@ public class GameState {
 	 *
 	 * @return All possible actions and their associated resulting game state
 	 */
-	public List<GameStateChild> getChildren() {
+	public List<GameStateChild> getChildren(int depth) {
 
 		ArrayList<GameStateChild> childrenList = new ArrayList<GameStateChild>();
 
 		List<Map<Integer, Action>> act = getActionPairs();
 		for (Map<Integer, Action> action : act) {
-			GameState gs = executeAction(action);
+			GameState gs = executeAction(action, depth);
 			GameStateChild newChild = new GameStateChild(action, gs);
 
 			childrenList.add(newChild);
