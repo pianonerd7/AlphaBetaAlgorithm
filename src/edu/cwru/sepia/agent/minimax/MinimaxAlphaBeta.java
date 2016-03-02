@@ -15,7 +15,6 @@ public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
 	public static boolean isMaxTurn = false;
-	public static int ply;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);
@@ -24,8 +23,8 @@ public class MinimaxAlphaBeta extends Agent {
 			System.err.println("You must specify the number of plys");
 			System.exit(1);
 		}
+
 		numPlys = Integer.parseInt(args[0]);
-		ply = numPlys;
 	}
 
 	@Override
@@ -35,6 +34,7 @@ public class MinimaxAlphaBeta extends Agent {
 
 	@Override
 	public Map<Integer, Action> middleStep(State.StateView newstate, History.HistoryView statehistory) {
+
 		GameStateChild bestChild = alphaBetaSearch(new GameStateChild(newstate), numPlys, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY);
 
@@ -92,11 +92,10 @@ public class MinimaxAlphaBeta extends Agent {
 		if (isMaxTurn) {
 			val = Double.NEGATIVE_INFINITY;
 
-			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren(depth))) {
+			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
 
 				if (child.state.getUtility() > val) {
 					val = child.state.getUtility();
-
 					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
 				}
 
@@ -109,7 +108,7 @@ public class MinimaxAlphaBeta extends Agent {
 		} else {
 			val = Double.POSITIVE_INFINITY;
 
-			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren(depth))) {
+			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
 
 				if (child.state.getUtility() < val) {
 					val = child.state.getUtility();
@@ -124,8 +123,7 @@ public class MinimaxAlphaBeta extends Agent {
 			}
 		}
 
-		print(bestNode);
-		return bestNode;
+		return needStochasticChild(bestNode, orderChildrenWithHeuristics(node.state.getChildren()));
 	}
 
 	private void print(GameStateChild bestNode) {
@@ -184,5 +182,56 @@ public class MinimaxAlphaBeta extends Agent {
 		}
 		System.out.println("orderedchildren end");
 		return orderedChildren;
+	}
+
+	ArrayList<GameStateChild> nPreviousChildren = new ArrayList<GameStateChild>();
+
+	private GameStateChild needStochasticChild(GameStateChild bestChild, List<GameStateChild> listOfChildren) {
+
+		if (!isMaxTurn) {
+			return bestChild;
+		}
+
+		nPreviousChildren.add(bestChild);
+
+		if (nPreviousChildren.size() < 10) {
+			return bestChild;
+		}
+
+		int count = 0;
+		List<MapLocation> childLoc = extractLocation(bestChild.state.footmenLocation);
+		for (int i = 0; i < 10; i++) {
+			List<MapLocation> indexLoc = extractLocation(nPreviousChildren.get(i).state.footmenLocation);
+
+			int counter = 0;
+			for (int j = 0; j < indexLoc.size(); j++) {
+				for (int k = 0; k < childLoc.size(); k++) {
+
+					if (childLoc.get(k).x == indexLoc.get(j).x && childLoc.get(k).y == indexLoc.get(j).y) {
+						counter++;
+					}
+				}
+			}
+
+			if (counter > 0) {
+				count++;
+			}
+		}
+
+		if (count > 3) {
+			return listOfChildren.get(listOfChildren.size() - 5);
+		}
+		return bestChild;
+	}
+
+	private List<MapLocation> extractLocation(Map<Integer, MapLocation> locations) {
+
+		List<MapLocation> loc = new ArrayList<MapLocation>();
+
+		for (Integer key : locations.keySet()) {
+			loc.add(locations.get(key));
+		}
+
+		return loc;
 	}
 }

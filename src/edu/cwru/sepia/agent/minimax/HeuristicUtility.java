@@ -347,22 +347,14 @@ public class HeuristicUtility {
 
 	private MapLocation getOriginalLocation(MapLocation start, Action action, MapLocation newStart) {
 
-		int factor;
-
-		if (gameState.depth == -1) {
-			factor = 1;
-		} else {
-			factor = MinimaxAlphaBeta.ply - gameState.depth + 1;
-		}
-
 		if (action.toString().contains("NORTH")) {
-			newStart.y += factor;
+			newStart.y += 1;
 		} else if (action.toString().contains("EAST")) {
-			newStart.x -= factor;
+			newStart.x -= 1;
 		} else if (action.toString().contains("SOUTH")) {
-			newStart.y -= factor;
+			newStart.y -= 1;
 		} else if (action.toString().contains("WEST")) {
-			newStart.x += factor;
+			newStart.x += 1;
 		}
 
 		return newStart;
