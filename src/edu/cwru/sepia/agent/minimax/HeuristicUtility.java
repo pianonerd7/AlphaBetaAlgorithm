@@ -117,8 +117,8 @@ public class HeuristicUtility {
 
 		corners.add(new MapLocation(0, 0));
 		corners.add(new MapLocation(xExtent, 0));
-		corners.add(new MapLocation(0, yExtent));
-		corners.add(new MapLocation(xExtent, yExtent));
+		corners.add(new MapLocation(0, yExtent - 1));
+		corners.add(new MapLocation(xExtent - 1, yExtent - 1));
 
 		for (MapLocation loc : corners) {
 			if (gameState.stateView.isResourceAt(loc.x, loc.y)) {
@@ -155,21 +155,37 @@ public class HeuristicUtility {
 			minSize = steps;
 			bestLocs.put(id, bestLoc);
 
-			if (minSize < 5) {
+			if (minSize < 3) {
 				MinimaxAlphaBeta.f1Cornered = true;
 			}
 		}
 
 		Map<Integer, Action> actions = gameState.gAction;
 
+		if (actions == null) {
+			return 0;
+		}
+
 		for (Integer key : bestLocs.keySet()) {
 			Action act = actions.get(key);
+
+			if (act == null) {
+				return 0;
+			}
+
 			MapLocation bestLoc = bestLocs.get(key);
 
-			if (bestLoc.x < 0 && act.toString().contains("WEST") || bestLoc.y < 0 && act.toString().contains("NORTH")
-					|| bestLoc.x > 0 && act.toString().contains("EAST")
-					|| bestLoc.y > 0 && act.toString().contains("SOUTH")) {
-				cornerUtility += 700;
+			if (bestLoc.y == 0 && act.toString().contains("NORTH")) {
+				cornerUtility += 500;
+			}
+			if (bestLoc.x > 0 && act.toString().contains("EAST")) {
+				cornerUtility += 500;
+			}
+			if (bestLoc.y > 0 && act.toString().contains("SOUTH")) {
+				cornerUtility += 500;
+			}
+			if (bestLoc.x == 0 && act.toString().contains("WEST")) {
+				cornerUtility += 500;
 			}
 		}
 		return cornerUtility;

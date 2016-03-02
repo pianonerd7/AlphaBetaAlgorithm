@@ -38,7 +38,7 @@ public class GameState {
 	public int footmenAttackPt;
 	public int archerAttackPt;
 	public double lifeExpectancy;
-	public double utility;
+	public double utility = 0;
 	public Map<Integer, Action> gAction;
 
 	Collection<Unit.UnitView> allUnits;

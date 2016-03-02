@@ -79,6 +79,8 @@ public class MinimaxAlphaBeta extends Agent {
 	 *            to the root
 	 * @return The best child of this node with updated values
 	 */
+	List<GameStateChild> best = new ArrayList<GameStateChild>();
+
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
 
 		isMaxTurn = !isMaxTurn;
@@ -88,59 +90,34 @@ public class MinimaxAlphaBeta extends Agent {
 			return node;
 		}
 
-		GameStateChild bestNode = null;
-		double val;
+		List<GameStateChild> children = orderChildrenWithHeuristics(node.state.getChildren());
 
 		if (isMaxTurn) {
-			val = Double.NEGATIVE_INFINITY;
+			for (GameStateChild child : children) {
 
-			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
+				child.state.utility += alphaBetaSearch(child, depth - 1, alpha, beta).state.getUtility();
 
-				if (child.state.getUtility() > val) {
-					val = child.state.getUtility();
-					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
-				}
-
-				alpha = Math.max(alpha, val);
-
-				if (beta <= alpha) {
-					break;
+				if (child.state.getUtility() < alpha) {
+					return child;
+				} else if (child.state.getUtility() < beta) {
+					beta = child.state.getUtility();
 				}
 			}
 		} else {
-			val = Double.POSITIVE_INFINITY;
+			for (GameStateChild child : children) {
 
-			for (GameStateChild child : orderChildrenWithHeuristics(node.state.getChildren())) {
+				GameStateChild state = alphaBetaSearch(child, depth - 1, alpha, beta);
+				child.state.utility += state.state.getUtility();
 
-				if (child.state.getUtility() < val) {
-					val = child.state.getUtility();
-					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
-				}
-
-				beta = Math.min(beta, val);
-
-				if (beta <= alpha) {
-					break;
+				if (child.state.getUtility() > beta) {
+					return child;
+				} else if (child.state.getUtility() > alpha) {
+					alpha = child.state.getUtility();
 				}
 			}
 		}
 
-		return bestNode;
-	}
-
-	private void print(GameStateChild bestNode) {
-		for (Integer key : bestNode.state.footmenLocation.keySet()) {
-			System.out.println("f maplocation: " + bestNode.state.footmenLocation.get(key).toString());
-		}
-
-		for (Integer key : bestNode.state.archerLocation.keySet()) {
-			System.out.println("a maplocation: " + bestNode.state.archerLocation.get(key).toString());
-		}
-
-		for (Integer key : bestNode.action.keySet()) {
-			System.out.println("action: " + bestNode.action.get(key).toString());
-		}
-		System.out.println("\n\n");
+		return children.get(0);
 	}
 
 	/**
@@ -162,20 +139,38 @@ public class MinimaxAlphaBeta extends Agent {
 
 		List<GameStateChild> orderedChildren = new ArrayList<GameStateChild>();
 
-		for (int i = 0; i < children.size(); i++) {
-			double max = Double.NEGATIVE_INFINITY;
-			GameStateChild bestChild = null;
-			for (int j = 0; j < children.size(); j++) {
+		if (isMaxTurn) {
+			for (int i = 0; i < children.size(); i++) {
+				double max = Double.NEGATIVE_INFINITY;
+				GameStateChild bestChild = null;
+				for (int j = 0; j < children.size(); j++) {
 
-				double utility = children.get(j).state.getUtility();
+					double utility = children.get(j).state.getUtility();
 
-				if (utility > max) {
-					max = utility;
-					bestChild = children.get(j);
+					if (utility > max) {
+						max = utility;
+						bestChild = children.get(j);
+					}
 				}
+				orderedChildren.add(bestChild);
+				children.remove(bestChild);
 			}
-			orderedChildren.add(bestChild);
-			children.remove(bestChild);
+		} else {
+			for (int i = 0; i < children.size(); i++) {
+				double min = Double.POSITIVE_INFINITY;
+				GameStateChild bestChild = null;
+				for (int j = 0; j < children.size(); j++) {
+
+					double utility = children.get(j).state.getUtility();
+
+					if (utility < min) {
+						min = utility;
+						bestChild = children.get(j);
+					}
+				}
+				orderedChildren.add(bestChild);
+				children.remove(bestChild);
+			}
 		}
 
 		System.out.println("ordered children begin");
