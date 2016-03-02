@@ -3,9 +3,9 @@ package edu.cwru.sepia.agent.minimax;
 class MapLocation implements Comparable<MapLocation> {
 	public int x;
 	public int y;
-	public int heuristicCost = 0;
-	public int functionCost = 0;
-	public int nodeCost = 0;
+	public double heuristicCost = 0;
+	public double functionCost = 0;
+	public double nodeCost = 0;
 	public MapLocation cameFrom;
 
 	public MapLocation(int x, int y) {
@@ -22,7 +22,7 @@ class MapLocation implements Comparable<MapLocation> {
 
 	@Override
 	public int compareTo(MapLocation otherMapLocation) {
-		return this.functionCost - otherMapLocation.functionCost;
+		return new Double(this.heuristicCost).compareTo(otherMapLocation.heuristicCost);
 	}
 
 	@Override

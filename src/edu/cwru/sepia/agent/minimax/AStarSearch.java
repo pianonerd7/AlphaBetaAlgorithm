@@ -1,8 +1,8 @@
 package edu.cwru.sepia.agent.minimax;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -11,7 +11,9 @@ public class AStarSearch {
 	public Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent,
 			MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations) {
 
-		PriorityQueue<MapLocation> openList = new PriorityQueue<MapLocation>();
+		// PriorityQueue<MapLocation> openList = new
+		// PriorityQueue<MapLocation>();
+		ArrayList<MapLocation> openList = new ArrayList<MapLocation>();
 		ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
 
 		start.nodeCost = 0;
@@ -21,9 +23,12 @@ public class AStarSearch {
 		openList.add(start);
 
 		while (!openList.isEmpty()) {
-			MapLocation current = openList.poll();
+			Collections.sort(openList);
+			MapLocation current = openList.get(0);
+			openList.remove(0);
 
 			if (current.x == goal.x && current.y == goal.y) {
+
 				return returnPath(current, start);
 			}
 
@@ -45,7 +50,7 @@ public class AStarSearch {
 		return null;
 	}
 
-	private boolean canAddToOpenList(MapLocation neighbor, PriorityQueue<MapLocation> openList,
+	private boolean canAddToOpenList(MapLocation neighbor, ArrayList<MapLocation> openList,
 			ArrayList<MapLocation> closedList) {
 
 		boolean toAdd = true;
@@ -67,7 +72,7 @@ public class AStarSearch {
 
 	}
 
-	private int getHeuristic(MapLocation current, MapLocation goal) {
+	private double getHeuristic(MapLocation current, MapLocation goal) {
 		return Math.max(Math.abs(current.x - goal.x), Math.abs(current.y - goal.y));
 	}
 
@@ -98,14 +103,14 @@ public class AStarSearch {
 		int x = current.x;
 		int y = current.y;
 
-		neighbors.add(new MapLocation(x - 1, y - 1, current, 1));
+		// neighbors.add(new MapLocation(x - 1, y - 1, current, 1));
 		neighbors.add(new MapLocation(x, y - 1, current, 1));
-		neighbors.add(new MapLocation(x + 1, y - 1, current, 1));
+		// neighbors.add(new MapLocation(x + 1, y - 1, current, 1));
 		neighbors.add(new MapLocation(x - 1, y, current, 1));
 		neighbors.add(new MapLocation(x + 1, y, current, 1));
-		neighbors.add(new MapLocation(x - 1, y + 1, current, 1));
+		// neighbors.add(new MapLocation(x - 1, y + 1, current, 1));
 		neighbors.add(new MapLocation(x, y + 1, current, 1));
-		neighbors.add(new MapLocation(x + 1, y + 1, current, 1));
+		// neighbors.add(new MapLocation(x + 1, y + 1, current, 1));
 
 		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
 			deleted = false;

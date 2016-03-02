@@ -1,5 +1,6 @@
 package edu.cwru.sepia.agent.minimax;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ public class HeuristicUtility {
 	private GameState gameState;
 	private int xExtent;
 	private int yExtent;
+	private boolean shouldCorner = false;
+	private MapLocation originalLoc;
 
 	public HeuristicUtility(GameState state) {
 		this.gameState = state;
@@ -27,8 +30,104 @@ public class HeuristicUtility {
 		double heuristicEstimate = 0.0;
 		heuristicEstimate += distanceUtility();
 		heuristicEstimate += hpUtility();
-		// System.out.println(heuristicEstimate);
 		return heuristicEstimate;
+	}
+
+	private double cornerEnemyUtility() {
+
+		double cornerUtility = 0.0;
+
+		List<MapLocation> corners = getCorners();
+		List<MapLocation> originalFLoc = getOriginalLocList(gameState.gAction);
+
+		int minSize = Integer.MAX_VALUE;
+		List<Stack<MapLocation>> optimalPath = new ArrayList<Stack<MapLocation>>();
+
+		for (MapLocation loc : corners) {
+			int sumSteps = 0;
+			List<Stack<MapLocation>> tempPath = new ArrayList<Stack<MapLocation>>();
+
+			for (MapLocation originalLoc : originalFLoc) {
+				AStarSearch aStar = new AStarSearch();
+				Stack<MapLocation> path = aStar.AstarSearch(originalLoc, loc, xExtent, yExtent, null, getResources());
+				sumSteps += path.size();
+				tempPath.add(path);
+			}
+
+			if (sumSteps < minSize) {
+				minSize = sumSteps;
+				optimalPath = tempPath;
+			}
+		}
+
+		List<MapLocation> nextSteps = new ArrayList<MapLocation>();
+
+		for (Stack<MapLocation> path : optimalPath) {
+
+			if (path.empty()) {
+				continue;
+			}
+			nextSteps.add(path.pop());
+		}
+
+		List<MapLocation> footmenLoc = new ArrayList<MapLocation>();
+
+		for (Integer key : gameState.footmenLocation.keySet()) {
+			footmenLoc.add(gameState.footmenLocation.get(key));
+		}
+
+		for (MapLocation loc : footmenLoc) {
+			for (MapLocation path : nextSteps) {
+				if (loc.x == path.x && loc.y == path.y) {
+					cornerUtility += 500;
+				}
+			}
+		}
+
+		return cornerUtility;
+	}
+
+	private List<MapLocation> getOriginalLocList(Map<Integer, Action> actions) {
+
+		List<MapLocation> originalLocList = new ArrayList<MapLocation>();
+		List<Integer> footmenID = gameState.footmenID;
+		Map<Integer, MapLocation> footmenLoc = gameState.footmenLocation;
+
+		for (Integer id : footmenID) {
+			Action act = actions.get(id);
+
+			if (act == null) {
+				continue;
+			}
+
+			MapLocation originalLoc = new MapLocation(footmenLoc.get(id).x, footmenLoc.get(id).y);
+
+			if (act instanceof DirectedAction) {
+				originalLoc = getOriginalLocation(footmenLoc.get(id), act, originalLoc);
+			}
+
+			originalLocList.add(originalLoc);
+		}
+
+		return originalLocList;
+	}
+
+	private List<MapLocation> getCorners() {
+
+		List<MapLocation> corners = new ArrayList<MapLocation>();
+
+		corners.add(new MapLocation(0, 0));
+		corners.add(new MapLocation(xExtent, 0));
+		corners.add(new MapLocation(0, yExtent));
+		corners.add(new MapLocation(xExtent, yExtent));
+
+		for (MapLocation loc : corners) {
+			if (gameState.stateView.isResourceAt(loc.x, loc.y)) {
+				corners.remove(loc);
+			}
+		}
+
+		return corners;
 	}
 
 	private double distanceUtility() {
@@ -59,21 +158,10 @@ public class HeuristicUtility {
 			for (Integer key : gameState.archerLocation.keySet()) {
 
 				if (key != index) {
-					// distUtility +=
-					// getDistance(gameState.footmenLocation.get(gameState.footmenID.get(1)),
-					// gameState.archerLocation.get(key));
-
 					distUtility += aStarSearch(gameState.footmenLocation.get(gameState.footmenID.get(1)),
 							gameState.archerLocation.get(key), gameState.footmenID.get(1), key);
 				}
 			}
-
-			// add bonus for keeping both agents alive
-			// if (MinimaxAlphaBeta.isMaxTurn) {
-			// distUtility += 100;
-			// } else {
-			// distUtility -= 100;
-			// }
 
 		} else if (numFootmen == 2 && numArchers == 1) {
 			MapLocation footman1 = gameState.footmenLocation.get(gameState.footmenID.get(0));
@@ -91,14 +179,8 @@ public class HeuristicUtility {
 				}
 			}
 
-			// distUtility += getDistance(footman1, archer);
-			// distUtility += getDistance(footman2, archer);
-
 			distUtility += aStarSearch(footman1, archer, gameState.footmenID.get(0), index);
 			distUtility += aStarSearch(footman2, archer, gameState.footmenID.get(1), index);
-
-			// add bonus for killing one archer and keeping both agent alive
-			// distUtility += 200;
 
 		} else if (numFootmen == 1 && numArchers == 2) {
 			MapLocation archer1 = gameState.archerLocation.get(gameState.archerID.get(0));
@@ -116,12 +198,8 @@ public class HeuristicUtility {
 				}
 			}
 
-			// distUtility += getDistance(archer1, footman);
-			// distUtility += getDistance(archer2, footman);
-
 			distUtility += aStarSearch(footman, archer1, index, gameState.archerID.get(0));
 			distUtility += aStarSearch(footman, archer2, index, gameState.archerID.get(1));
-			// distUtility -= 200;
 
 		} else if (numFootmen == 1 && numArchers == 1) {
 			MapLocation footman = null;
@@ -150,7 +228,6 @@ public class HeuristicUtility {
 			}
 
 			distUtility += aStarSearch(footman, archer, fIndex, aIndex);
-			// distUtility += getDistance(archer, footman);
 		}
 
 		return distUtility;
@@ -232,7 +309,13 @@ public class HeuristicUtility {
 		Stack<MapLocation> path = aStar.AstarSearch(originalStart, goal, xExtent, yExtent, null, getResources());
 
 		if (path.isEmpty()) {
-			return 500;
+			return 0;
+		}
+
+		// stop chasing the archer, corner them and finish them!
+		if (path.size() <= 1) {
+			aStarUtility += cornerEnemyUtility();
+			return aStarUtility;
 		}
 
 		MapLocation nextLocation = path.pop();
@@ -252,9 +335,22 @@ public class HeuristicUtility {
 			newStart.x -= 1;
 		} else if (action.toString().contains("SOUTH")) {
 			newStart.y -= 1;
-		} else {// WEST
+		} else if (action.toString().contains("WEST")) {
 			newStart.x += 1;
+		} else if (action.toString().contains("NORTHEAST")) {
+			newStart.x -= 1;
+			newStart.y += 1;
+		} else if (action.toString().contains("SOUTHEAST")) {
+			newStart.x -= 1;
+			newStart.y -= 1;
+		} else if (action.toString().contains("SOUTHWEST")) {
+			newStart.x += 1;
+			newStart.y -= 1;
+		} else if (action.toString().contains("NORTHWEST")) {
+			newStart.x += 1;
+			newStart.y += 1;
 		}
+
 		return newStart;
 	}
 }
