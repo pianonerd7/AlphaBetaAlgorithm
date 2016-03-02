@@ -15,6 +15,7 @@ public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
 	public static boolean isMaxTurn = false;
+	public static int atPly = 0;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);
@@ -80,6 +81,8 @@ public class MinimaxAlphaBeta extends Agent {
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
 
 		isMaxTurn = !isMaxTurn;
+
+		// MinimaxAlphaBeta.atPly++;
 
 		if (node.state.lifeExpectancy == Double.MIN_VALUE || node.state.lifeExpectancy == Double.MAX_VALUE
 				|| depth == 0) {

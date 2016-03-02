@@ -322,31 +322,39 @@ public class HeuristicUtility {
 			aStarUtility = 500;
 		}
 
+		aStarUtility += penaltyForNegativeAction(footmanAction, start, nextLocation);
+
 		return aStarUtility;
+	}
+
+	private double penaltyForNegativeAction(Action action, MapLocation start, MapLocation nextLoc) {
+
+		double negativeActUtility = 0.0;
+
+		if (!(action instanceof DirectedAction)) {
+			return 0;
+		}
+
+		int xDiff = Math.abs(start.x - nextLoc.x);
+		int yDiff = Math.abs(start.y - nextLoc.y);
+
+		if (xDiff == 2 || yDiff == 2) {
+			negativeActUtility += -1000;
+		}
+
+		return negativeActUtility;
 	}
 
 	private MapLocation getOriginalLocation(MapLocation start, Action action, MapLocation newStart) {
 
 		if (action.toString().contains("NORTH")) {
-			newStart.y += 1;
+			newStart.y += 1 * MinimaxAlphaBeta.atPly;
 		} else if (action.toString().contains("EAST")) {
-			newStart.x -= 1;
+			newStart.x -= 1 * MinimaxAlphaBeta.atPly;
 		} else if (action.toString().contains("SOUTH")) {
-			newStart.y -= 1;
+			newStart.y -= 1 * MinimaxAlphaBeta.atPly;
 		} else if (action.toString().contains("WEST")) {
-			newStart.x += 1;
-		} else if (action.toString().contains("NORTHEAST")) {
-			newStart.x -= 1;
-			newStart.y += 1;
-		} else if (action.toString().contains("SOUTHEAST")) {
-			newStart.x -= 1;
-			newStart.y -= 1;
-		} else if (action.toString().contains("SOUTHWEST")) {
-			newStart.x += 1;
-			newStart.y -= 1;
-		} else if (action.toString().contains("NORTHWEST")) {
-			newStart.x += 1;
-			newStart.y += 1;
+			newStart.x += 1 * MinimaxAlphaBeta.atPly;
 		}
 
 		return newStart;
