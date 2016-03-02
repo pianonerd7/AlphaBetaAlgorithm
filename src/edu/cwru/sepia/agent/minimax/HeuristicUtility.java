@@ -1,6 +1,7 @@
 package edu.cwru.sepia.agent.minimax;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -136,56 +137,42 @@ public class HeuristicUtility {
 		Map<Integer, MapLocation> footmenLoc = gameState.footmenLocation;
 
 		int minSize = Integer.MAX_VALUE;
-		List<Stack<MapLocation>> optimalPath = new ArrayList<Stack<MapLocation>>();
+		Map<Integer, MapLocation> bestLocs = new HashMap<Integer, MapLocation>();
 
-		for (Integer fKey : footmenLoc.keySet()) {
+		for (Integer id : gameState.footmenID) {
 			int steps = Integer.MAX_VALUE;
-			Stack<MapLocation> tempPath = null;
-
+			MapLocation bestLoc = null;
 			for (MapLocation loc : corners) {
 				AStarSearch aStar = new AStarSearch();
-				Stack<MapLocation> path = aStar.AstarSearch(footmenLoc.get(fKey), loc, xExtent, yExtent, null,
+				Stack<MapLocation> path = aStar.AstarSearch(footmenLoc.get(id), loc, xExtent, yExtent, null,
 						getResources());
 
 				if (path.size() < steps) {
 					steps = path.size();
-					tempPath = path;
+					bestLoc = loc;
 				}
 			}
 			minSize = steps;
-			optimalPath.add(tempPath);
+			bestLocs.put(id, bestLoc);
 
 			if (minSize < 5) {
 				MinimaxAlphaBeta.f1Cornered = true;
 			}
 		}
 
-		List<MapLocation> nextSteps = new ArrayList<MapLocation>();
+		Map<Integer, Action> actions = gameState.gAction;
 
-		for (Stack<MapLocation> path : optimalPath) {
-			nextSteps.add(path.pop());
-		}
+		for (Integer key : bestLocs.keySet()) {
+			Action act = actions.get(key);
+			MapLocation bestLoc = bestLocs.get(key);
 
-		for (MapLocation loc : extractLocation(footmenLoc)) {
-			for (MapLocation path : nextSteps) {
-				if (loc.x == path.x && loc.y == path.y) {
-					cornerUtility += 700;
-				}
+			if (bestLoc.x < 0 && act.toString().contains("WEST") || bestLoc.y < 0 && act.toString().contains("NORTH")
+					|| bestLoc.x > 0 && act.toString().contains("EAST")
+					|| bestLoc.y > 0 && act.toString().contains("SOUTH")) {
+				cornerUtility += 700;
 			}
 		}
-
 		return cornerUtility;
-	}
-
-	private List<MapLocation> extractLocation(Map<Integer, MapLocation> locations) {
-
-		List<MapLocation> loc = new ArrayList<MapLocation>();
-
-		for (Integer key : locations.keySet()) {
-			loc.add(locations.get(key));
-		}
-
-		return loc;
 	}
 
 	private double distanceUtility() {
