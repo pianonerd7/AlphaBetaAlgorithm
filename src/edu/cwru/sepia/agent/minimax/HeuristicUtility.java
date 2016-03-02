@@ -16,8 +16,6 @@ public class HeuristicUtility {
 	private GameState gameState;
 	private int xExtent;
 	private int yExtent;
-	private boolean shouldCorner = false;
-	private MapLocation originalLoc;
 
 	public HeuristicUtility(GameState state) {
 		this.gameState = state;
@@ -29,7 +27,7 @@ public class HeuristicUtility {
 
 		double heuristicEstimate = 0.0;
 		heuristicEstimate += distanceUtility();
-		heuristicEstimate += hpUtility();
+		// heuristicEstimate += hpUtility();
 		return heuristicEstimate;
 	}
 
@@ -247,30 +245,30 @@ public class HeuristicUtility {
 		return c;
 	}
 
-	private double hpUtility() {
-
-		double hpUtility = 0;
-		double fFullHp = 160;
-		double aFullHp = 50;
-
-		if (MinimaxAlphaBeta.isMaxTurn) {
-			if (gameState.footmenID.size() < 2) {
-				hpUtility -= 10000;
-			}
-		}
-
-		double footmen = 0.0;
-		for (Integer key : gameState.footmenHP.keySet()) {
-			footmen += fFullHp - gameState.footmenHP.get(key);
-		}
-
-		double archers = 0.0;
-		for (Integer key : gameState.archerHP.keySet()) {
-			archers += aFullHp - gameState.archerHP.get(key);
-		}
-
-		return (archers - footmen);
-	}
+	// private double hpUtility() {
+	//
+	// double hpUtility = 0;
+	// double fFullHp = 160;
+	// double aFullHp = 50;
+	//
+	// if (MinimaxAlphaBeta.isMaxTurn) {
+	// if (gameState.footmenID.size() < 2) {
+	// hpUtility -= 10000;
+	// }
+	// }
+	//
+	// double footmen = 0.0;
+	// for (Integer key : gameState.footmenHP.keySet()) {
+	// footmen += fFullHp - gameState.footmenHP.get(key);
+	// }
+	//
+	// double archers = 0.0;
+	// for (Integer key : gameState.archerHP.keySet()) {
+	// archers += aFullHp - gameState.archerHP.get(key);
+	// }
+	//
+	// return (archers - footmen);
+	// }
 
 	private Set<MapLocation> getResources() {
 
