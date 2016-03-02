@@ -128,7 +128,73 @@ public class HeuristicUtility {
 		return corners;
 	}
 
+	private double cornerHeuristic() {
+
+		double cornerUtility = 0.0;
+
+		List<MapLocation> corners = getCorners();
+		Map<Integer, MapLocation> footmenLoc = gameState.footmenLocation;
+
+		int minSize = Integer.MAX_VALUE;
+		List<Stack<MapLocation>> optimalPath = new ArrayList<Stack<MapLocation>>();
+
+		for (Integer fKey : footmenLoc.keySet()) {
+			int steps = Integer.MAX_VALUE;
+			Stack<MapLocation> tempPath = null;
+
+			for (MapLocation loc : corners) {
+				AStarSearch aStar = new AStarSearch();
+				Stack<MapLocation> path = aStar.AstarSearch(footmenLoc.get(fKey), loc, xExtent, yExtent, null,
+						getResources());
+
+				if (path.size() < steps) {
+					steps = path.size();
+					tempPath = path;
+				}
+			}
+			minSize = steps;
+			optimalPath.add(tempPath);
+
+			if (minSize < 5) {
+				MinimaxAlphaBeta.f1Cornered = true;
+			}
+		}
+
+		List<MapLocation> nextSteps = new ArrayList<MapLocation>();
+
+		for (Stack<MapLocation> path : optimalPath) {
+			nextSteps.add(path.pop());
+		}
+
+		for (MapLocation loc : extractLocation(footmenLoc)) {
+			for (MapLocation path : nextSteps) {
+				if (loc.x == path.x && loc.y == path.y) {
+					cornerUtility += 700;
+				}
+			}
+		}
+
+		return cornerUtility;
+	}
+
+	private List<MapLocation> extractLocation(Map<Integer, MapLocation> locations) {
+
+		List<MapLocation> loc = new ArrayList<MapLocation>();
+
+		for (Integer key : locations.keySet()) {
+			loc.add(locations.get(key));
+		}
+
+		return loc;
+	}
+
 	private double distanceUtility() {
+
+		Set<MapLocation> resources = getResources();
+
+		if (resources != null && !MinimaxAlphaBeta.f1Cornered) {
+			return cornerHeuristic();
+		}
 
 		double distUtility = 0.0;
 		int numFootmen = gameState.footmenLocation.size();

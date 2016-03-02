@@ -15,6 +15,8 @@ public class MinimaxAlphaBeta extends Agent {
 
 	private final int numPlys;
 	public static boolean isMaxTurn = false;
+	public static boolean f1Cornered = false;
+	public static boolean f2Cornered = false;
 
 	public MinimaxAlphaBeta(int playernum, String[] args) {
 		super(playernum);
@@ -123,7 +125,7 @@ public class MinimaxAlphaBeta extends Agent {
 			}
 		}
 
-		return needStochasticChild(bestNode, orderChildrenWithHeuristics(node.state.getChildren()));
+		return bestNode;
 	}
 
 	private void print(GameStateChild bestNode) {
@@ -182,56 +184,5 @@ public class MinimaxAlphaBeta extends Agent {
 		}
 		System.out.println("orderedchildren end");
 		return orderedChildren;
-	}
-
-	ArrayList<GameStateChild> nPreviousChildren = new ArrayList<GameStateChild>();
-
-	private GameStateChild needStochasticChild(GameStateChild bestChild, List<GameStateChild> listOfChildren) {
-
-		if (!isMaxTurn) {
-			return bestChild;
-		}
-
-		nPreviousChildren.add(bestChild);
-
-		if (nPreviousChildren.size() < 10) {
-			return bestChild;
-		}
-
-		int count = 0;
-		List<MapLocation> childLoc = extractLocation(bestChild.state.footmenLocation);
-		for (int i = 0; i < 10; i++) {
-			List<MapLocation> indexLoc = extractLocation(nPreviousChildren.get(i).state.footmenLocation);
-
-			int counter = 0;
-			for (int j = 0; j < indexLoc.size(); j++) {
-				for (int k = 0; k < childLoc.size(); k++) {
-
-					if (childLoc.get(k).x == indexLoc.get(j).x && childLoc.get(k).y == indexLoc.get(j).y) {
-						counter++;
-					}
-				}
-			}
-
-			if (counter > 0) {
-				count++;
-			}
-		}
-
-		if (count > 3) {
-			return listOfChildren.get(listOfChildren.size() - 5);
-		}
-		return bestChild;
-	}
-
-	private List<MapLocation> extractLocation(Map<Integer, MapLocation> locations) {
-
-		List<MapLocation> loc = new ArrayList<MapLocation>();
-
-		for (Integer key : locations.keySet()) {
-			loc.add(locations.get(key));
-		}
-
-		return loc;
 	}
 }
