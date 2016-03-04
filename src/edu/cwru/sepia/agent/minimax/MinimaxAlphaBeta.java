@@ -186,12 +186,6 @@ public class MinimaxAlphaBeta extends Agent {
 				children.remove(bestChild);
 			}
 		}
-
-		System.out.println("ordered children begin");
-		for (GameStateChild c : orderedChildren) {
-			System.out.println(c.state.getUtility());
-		}
-		System.out.println("orderedchildren end");
 		return orderedChildren;
 	}
 }

@@ -74,6 +74,26 @@ public class GameState {
 		this.utility += util.getHeuristic();
 	}
 
+	/**
+	 * GameState constructor that takes in individual fields rather than cloning
+	 * a GameState object
+	 * 
+	 * @param state
+	 * @param footmenLocation
+	 * @param archerLocation
+	 * @param footmenID
+	 * @param archerID
+	 * @param footmenHP
+	 * @param archerHP
+	 * @param allUnits
+	 * @param footmenAttackRange
+	 * @param archerAttackRange
+	 * @param footmenAttackPt
+	 * @param archerAttackpt
+	 * @param lifeExpectancy
+	 * @param utility
+	 * @param action
+	 */
 	public GameState(State.StateView state, Map<Integer, MapLocation> footmenLocation,
 			Map<Integer, MapLocation> archerLocation, List<Integer> footmenID, List<Integer> archerID,
 			Map<Integer, Integer> footmenHP, Map<Integer, Integer> archerHP, Collection<Unit.UnitView> allUnits,
@@ -98,6 +118,11 @@ public class GameState {
 		this.utility += util.getHeuristic();
 	}
 
+	/**
+	 * Initializes the field from the StateView
+	 * 
+	 * @param state
+	 */
 	private void populatePlayers(State.StateView state) {
 
 		Collection<Unit.UnitView> units = state.getAllUnits();
@@ -124,6 +149,13 @@ public class GameState {
 		this.allUnits = units;
 	}
 
+	/**
+	 * Get all the possible actions an agent can make
+	 * 
+	 * @param id
+	 * @param location
+	 * @return
+	 */
 	private ArrayList<Action> getAction(Integer id, MapLocation location) {
 
 		ArrayList<Action> legalActions = new ArrayList<Action>();
@@ -172,6 +204,14 @@ public class GameState {
 		return legalActions;
 	}
 
+	/**
+	 * Checks to see if a location is valid. A location is valid if there are no
+	 * resources, is in bound, and is not occupied at the moment
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	private boolean isLocationValid(int x, int y) {
 
 		if (stateView.isResourceAt(x, y) || !stateView.inBounds(x, y)) {
@@ -197,6 +237,12 @@ public class GameState {
 		return true;
 	}
 
+	/**
+	 * Returns a list of MapLocations of enemy I can attack
+	 * 
+	 * @param location
+	 * @return
+	 */
 	private ArrayList<MapLocation> getAttackableEnemies(MapLocation location) {
 
 		ArrayList<MapLocation> attackables = new ArrayList<MapLocation>();
@@ -239,6 +285,11 @@ public class GameState {
 		return attackables;
 	}
 
+	/**
+	 * Gets all combinations of actions for each set of agent
+	 * 
+	 * @return
+	 */
 	private List<Map<Integer, Action>> getActionPairs() {
 
 		List<ArrayList<Action>> actions = new ArrayList<ArrayList<Action>>();
@@ -336,6 +387,13 @@ public class GameState {
 		return actionPairs;
 	}
 
+	/**
+	 * Executes the action to change the state of the game. Because java doesn't
+	 * have deep copy, i have to manually clone every object.
+	 * 
+	 * @param action
+	 * @return
+	 */
 	private GameState executeAction(Map<Integer, Action> action) {
 
 		List<MapLocation> me = new ArrayList<MapLocation>();
@@ -530,6 +588,14 @@ public class GameState {
 		}
 	}
 
+	/**
+	 * Used in executeAction to move an agent in a certain direction
+	 * 
+	 * @param me
+	 * @param myDir
+	 * @param id
+	 * @return
+	 */
 	private Map<Integer, MapLocation> updateLocation(List<MapLocation> me, List<Direction> myDir, List<Integer> id) {
 
 		Map<Integer, MapLocation> newLoc = new HashMap<Integer, MapLocation>();
@@ -562,18 +628,6 @@ public class GameState {
 		}
 		return newLoc;
 	}
-
-	/*
-	 * private boolean isStateValid(State newState) {
-	 * 
-	 * Collection<PlayerState> playerStates = newState.getPlayerStates();
-	 * 
-	 * HashMap<Integer, Integer> checker = new HashMap<Integer, Integer>();
-	 * 
-	 * for (PlayerState player : playerStates) { }
-	 * 
-	 * newState.stateView }
-	 */
 
 	/**
 	 * You will implement this function.

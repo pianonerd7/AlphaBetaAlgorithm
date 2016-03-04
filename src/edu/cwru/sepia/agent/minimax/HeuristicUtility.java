@@ -12,6 +12,11 @@ import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.action.DirectedAction;
 import edu.cwru.sepia.environment.model.state.ResourceNode;
 
+/**
+ * This class calculate sthe heuristic of a specific GameState of a GameState
+ * child. The heuristic calculation is abstracted away in this class
+ *
+ */
 public class HeuristicUtility {
 
 	private GameState gameState;
@@ -24,6 +29,11 @@ public class HeuristicUtility {
 		yExtent = gameState.stateView.getYExtent();
 	}
 
+	/**
+	 * Computes the heuristic using linear weight
+	 * 
+	 * @return
+	 */
 	public double getHeuristic() {
 
 		double heuristicEstimate = 0.0;
@@ -31,6 +41,14 @@ public class HeuristicUtility {
 		return heuristicEstimate;
 	}
 
+	/**
+	 * If the enemy is ever at a state where out of the four adjacent locations,
+	 * three are occupied (either out of bound, or has a resource), then the
+	 * agent should be rewarded for going to the last available location to
+	 * block the enemy
+	 * 
+	 * @return
+	 */
 	private double blockUtility() {
 
 		double blockUtil = 0.0;
@@ -77,6 +95,13 @@ public class HeuristicUtility {
 		return blockUtil;
 	}
 
+	/**
+	 * Give me the location of an archer and I will give you the footmenID of
+	 * the closest footman
+	 * 
+	 * @param archer
+	 * @return
+	 */
 	private int getClosestFootman(MapLocation archer) {
 
 		Map<Integer, MapLocation> footmen = gameState.footmenLocation;
@@ -96,6 +121,12 @@ public class HeuristicUtility {
 		return bestKey;
 	}
 
+	/**
+	 * See if it's possible to corner an enemy and finish them. Higher utility
+	 * means one step closer to cornering enemy
+	 * 
+	 * @return
+	 */
 	private double cornerEnemyUtility() {
 
 		double cornerUtility = 0.0;
@@ -156,6 +187,12 @@ public class HeuristicUtility {
 		return cornerUtility;
 	}
 
+	/**
+	 * Gets the original location prior to the action
+	 * 
+	 * @param actions
+	 * @return
+	 */
 	private List<MapLocation> getOriginalLocList(Map<Integer, Action> actions) {
 
 		List<MapLocation> originalLocList = new ArrayList<MapLocation>();
@@ -181,6 +218,11 @@ public class HeuristicUtility {
 		return originalLocList;
 	}
 
+	/**
+	 * Gets the four corners of the map
+	 * 
+	 * @return
+	 */
 	private List<MapLocation> getCorners() {
 
 		List<MapLocation> corners = new ArrayList<MapLocation>();
@@ -199,6 +241,12 @@ public class HeuristicUtility {
 		return corners;
 	}
 
+	/**
+	 * If the footman has a possibility of being stuck, it retreats to the
+	 * closest corner
+	 * 
+	 * @return
+	 */
 	private double cornerHeuristic() {
 
 		double cornerUtility = 0.0;
@@ -261,6 +309,12 @@ public class HeuristicUtility {
 		return cornerUtility;
 	}
 
+	/**
+	 * Calculates the utility of the state based on the number of footmen and
+	 * archers still alive
+	 * 
+	 * @return
+	 */
 	private double distanceUtility() {
 
 		Set<MapLocation> resources = getResources();
@@ -288,7 +342,6 @@ public class HeuristicUtility {
 				}
 			}
 
-			// distUtility += tempBest;
 			distUtility += aStarSearch(footman1, gameState.archerLocation.get(index), gameState.footmenID.get(0), index,
 					true);
 
@@ -370,6 +423,13 @@ public class HeuristicUtility {
 		return distUtility;
 	}
 
+	/**
+	 * Computes the pythagorean theorem distance between two MapLocations
+	 * 
+	 * @param me
+	 * @param enemy
+	 * @return
+	 */
 	private double getDistance(MapLocation me, MapLocation enemy) {
 
 		int me_x = me.x;
@@ -384,6 +444,11 @@ public class HeuristicUtility {
 		return c;
 	}
 
+	/**
+	 * Gets all the resources on a map
+	 * 
+	 * @return
+	 */
 	private Set<MapLocation> getResources() {
 
 		List<Integer> resourceIDs = gameState.stateView.getAllResourceIds();
@@ -397,6 +462,19 @@ public class HeuristicUtility {
 		return resourceLocations;
 	}
 
+	/**
+	 * Uses the AStarSearch algorithm to see if the agent is moving closer
+	 * towards the enemy. Especially for footmen, it must locate the archer as
+	 * soon as possible, since archers can shoot far, and footmen can only
+	 * attack at a close distance.
+	 * 
+	 * @param start
+	 * @param goal
+	 * @param footmanKey
+	 * @param archerKey
+	 * @param toCorner
+	 * @return
+	 */
 	private double aStarSearch(MapLocation start, MapLocation goal, int footmanKey, int archerKey, boolean toCorner) {
 
 		double aStarUtility = 0.0;
@@ -441,6 +519,15 @@ public class HeuristicUtility {
 		return aStarUtility;
 	}
 
+	/**
+	 * Penalizes the agent if it tries to go in the opposite direction than the
+	 * optimal direction
+	 * 
+	 * @param action
+	 * @param start
+	 * @param nextLoc
+	 * @return
+	 */
 	private double penaltyForNegativeAction(Action action, MapLocation start, MapLocation nextLoc) {
 
 		double negativeActUtility = 0.0;
@@ -459,6 +546,14 @@ public class HeuristicUtility {
 		return negativeActUtility;
 	}
 
+	/**
+	 * Gets the original location prior to the action
+	 * 
+	 * @param start
+	 * @param action
+	 * @param newStart
+	 * @return
+	 */
 	private MapLocation getOriginalLocation(MapLocation start, Action action, MapLocation newStart) {
 
 		if (action.toString().contains("NORTH")) {
