@@ -83,6 +83,50 @@ public class MinimaxAlphaBeta extends Agent {
 
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
 
+		// isMaxTurn = !isMaxTurn;
+		//
+		// if (node.state.lifeExpectancy == Double.MIN_VALUE ||
+		// node.state.lifeExpectancy == Double.MAX_VALUE
+		// || depth == 0) {
+		// return node;
+		// }
+		//
+		// List<GameStateChild> children =
+		// orderChildrenWithHeuristics(node.state.getChildren());
+		//
+		// if (isMaxTurn) {
+		// for (GameStateChild child : children) {
+		//
+		// child.state.utility += alphaBetaSearch(child, depth - 1, alpha,
+		// beta).state.getUtility();
+		//
+		// if (child.state.getUtility() < alpha) {
+		// return child;
+		// } else if (child.state.getUtility() < beta) {
+		// beta = child.state.getUtility();
+		// }
+		// }
+		// } else {
+		// for (GameStateChild child : children) {
+		//
+		// GameStateChild state = alphaBetaSearch(child, depth - 1, alpha,
+		// beta);
+		// child.state.utility += state.state.getUtility();
+		//
+		// if (child.state.getUtility() > beta) {
+		// return child;
+		// } else if (child.state.getUtility() > alpha) {
+		// alpha = child.state.getUtility();
+		// }
+		// }
+		// }
+		//
+		// if (isMaxTurn) {
+		// print(children.get(0));
+		// }
+		// return children.get(0);
+		// }
+
 		isMaxTurn = !isMaxTurn;
 
 		if (node.state.lifeExpectancy == Double.MIN_VALUE || node.state.lifeExpectancy == Double.MAX_VALUE
@@ -90,34 +134,60 @@ public class MinimaxAlphaBeta extends Agent {
 			return node;
 		}
 
+		GameStateChild bestNode = null;
+		double val;
 		List<GameStateChild> children = orderChildrenWithHeuristics(node.state.getChildren());
 
 		if (isMaxTurn) {
+			val = Double.NEGATIVE_INFINITY;
+
 			for (GameStateChild child : children) {
 
-				child.state.utility += alphaBetaSearch(child, depth - 1, alpha, beta).state.getUtility();
+				if (child.state.getUtility() > val) {
+					val = child.state.getUtility();
+					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
+				}
 
-				if (child.state.getUtility() < alpha) {
-					return child;
-				} else if (child.state.getUtility() < beta) {
-					beta = child.state.getUtility();
+				alpha = Math.max(alpha, val);
+
+				if (beta <= alpha) {
+					break;
 				}
 			}
 		} else {
+			val = Double.POSITIVE_INFINITY;
+
 			for (GameStateChild child : children) {
 
-				GameStateChild state = alphaBetaSearch(child, depth - 1, alpha, beta);
-				child.state.utility += state.state.getUtility();
+				if (child.state.getUtility() < val) {
+					val = child.state.getUtility();
+					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
+				}
 
-				if (child.state.getUtility() > beta) {
-					return child;
-				} else if (child.state.getUtility() > alpha) {
-					alpha = child.state.getUtility();
+				beta = Math.min(beta, val);
+
+				if (beta <= alpha) {
+					break;
 				}
 			}
 		}
+		print(bestNode);
+		return bestNode;
+	}
 
-		return children.get(0);
+	private void print(GameStateChild bestNode) {
+		for (Integer key : bestNode.state.footmenLocation.keySet()) {
+			System.out.println("f maplocation: " + bestNode.state.footmenLocation.get(key).toString());
+		}
+
+		for (Integer key : bestNode.state.archerLocation.keySet()) {
+			System.out.println("a maplocation: " + bestNode.state.archerLocation.get(key).toString());
+		}
+
+		for (Integer key : bestNode.action.keySet()) {
+			System.out.println("action: " + bestNode.action.get(key).toString());
+		}
+		System.out.println("\n\n");
 	}
 
 	/**
