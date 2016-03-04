@@ -66,17 +66,11 @@ public class HeuristicUtility {
 		}
 
 		for (ArrayList<MapLocation> list : newList) {
-			if (list.size() < 3) {
+			if (list.size() == 1) {
 
-				MapLocation bestFootman = getClosestFootman(list.get(0));
-				MapLocation nextBest = null;
-
-				if (list.get(1) != null) {
-					nextBest = getClosestFootman(list.get(1));
-					blockUtil += isMovingTowards(nextBest, list.get(0));
-				}
-
-				blockUtil += isMovingTowards(bestFootman, list.get(0));
+				int bestKey = getClosestFootman(list.get(0));
+				MapLocation bestFootman = gameState.footmenLocation.get(bestKey);
+				blockUtil += isMovingTowards(bestFootman, list.get(0), bestKey);
 
 			}
 		}
@@ -84,7 +78,7 @@ public class HeuristicUtility {
 		return blockUtil;
 	}
 
-	private double isMovingTowards(MapLocation start, MapLocation goal) {
+	private double isMovingTowards(MapLocation start, MapLocation goal, int fkey) {
 
 		double utility = 0;
 
@@ -92,33 +86,26 @@ public class HeuristicUtility {
 			return utility;
 		}
 
-		Integer fkey = -1;
-		for (Integer key : gameState.footmenLocation.keySet()) {
-			fkey = key;
-			break;
+		AStarSearch aStar = new AStarSearch();
+		Stack<MapLocation> path = aStar.AstarSearch(start, goal, xExtent, yExtent, null, getResources());
+
+		if (path.isEmpty()) {
+			return 0;
 		}
+
+		MapLocation nextLocation = path.pop();
 
 		Map<Integer, Action> gaction = gameState.gAction;
-		Action action = gaction.get(fkey);
+		// Action action = gaction.get(fkey);
 
-		String str = action.toString();
-		if (goal.y < start.y && str.contains("NORTH")) {
-			utility += 500;
-		}
-		if (goal.x > start.x && str.contains("EAST")) {
-			utility += 500;
-		}
-		if (goal.y > start.y && str.contains("SOUTH")) {
-			utility += 500;
-		}
-		if (goal.x < start.x && str.contains("WEST")) {
-			utility += 500;
+		if (nextLocation.x == start.x && nextLocation.y == start.y) {
+			utility = 500;
 		}
 
 		return utility;
 	}
 
-	private MapLocation getClosestFootman(MapLocation archer) {
+	private int getClosestFootman(MapLocation archer) {
 
 		Map<Integer, MapLocation> footmen = gameState.footmenLocation;
 
@@ -134,18 +121,18 @@ public class HeuristicUtility {
 			}
 		}
 
-		return footmen.get(bestKey);
+		return bestKey;
 	}
 
 	private double cornerEnemyUtility() {
 
 		double cornerUtility = 0.0;
 
-		// double blockUtil = blockUtility();
-		// if (blockUtil > 0) {
-		// cornerUtility += blockUtil;
-		// return cornerUtility;
-		// }
+		double blockUtil = blockUtility();
+		if (blockUtil > 0) {
+			cornerUtility += blockUtil;
+			return cornerUtility;
+		}
 
 		List<MapLocation> corners = getCorners();
 		List<MapLocation> originalFLoc = getOriginalLocList(gameState.gAction);
