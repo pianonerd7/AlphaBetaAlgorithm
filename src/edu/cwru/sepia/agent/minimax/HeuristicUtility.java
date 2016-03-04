@@ -28,13 +28,124 @@ public class HeuristicUtility {
 
 		double heuristicEstimate = 0.0;
 		heuristicEstimate += distanceUtility();
-		// heuristicEstimate += hpUtility();
 		return heuristicEstimate;
+	}
+
+	private double blockUtility() {
+
+		double blockUtil = 0.0;
+
+		Map<Integer, MapLocation> archerLoc = gameState.archerLocation;
+
+		List<ArrayList<MapLocation>> openPositionList = new ArrayList<ArrayList<MapLocation>>();
+
+		for (Integer key : archerLoc.keySet()) {
+
+			ArrayList<MapLocation> openPositions = new ArrayList<MapLocation>();
+
+			MapLocation temp = archerLoc.get(key);
+			openPositions.add(new MapLocation(temp.x, temp.y - 1));
+			openPositions.add(new MapLocation(temp.x, temp.y + 1));
+			openPositions.add(new MapLocation(temp.x - 1, temp.y));
+			openPositions.add(new MapLocation(temp.x + 1, temp.y));
+
+			openPositionList.add(openPositions);
+		}
+
+		List<ArrayList<MapLocation>> newList = new ArrayList<ArrayList<MapLocation>>();
+		for (ArrayList<MapLocation> list : openPositionList) {
+
+			ArrayList<MapLocation> newLocs = new ArrayList<MapLocation>();
+			for (MapLocation loc : list) {
+				if (gameState.stateView.isResourceAt(loc.x, loc.y) || !gameState.stateView.inBounds(loc.x, loc.y)) {
+					continue;
+				}
+				newLocs.add(loc);
+			}
+			newList.add(newLocs);
+		}
+
+		for (ArrayList<MapLocation> list : newList) {
+			if (list.size() < 3) {
+
+				MapLocation bestFootman = getClosestFootman(list.get(0));
+				MapLocation nextBest = null;
+
+				if (list.get(1) != null) {
+					nextBest = getClosestFootman(list.get(1));
+					blockUtil += isMovingTowards(nextBest, list.get(0));
+				}
+
+				blockUtil += isMovingTowards(bestFootman, list.get(0));
+
+			}
+		}
+
+		return blockUtil;
+	}
+
+	private double isMovingTowards(MapLocation start, MapLocation goal) {
+
+		double utility = 0;
+
+		if (start == null || goal == null) {
+			return utility;
+		}
+
+		Integer fkey = -1;
+		for (Integer key : gameState.footmenLocation.keySet()) {
+			fkey = key;
+			break;
+		}
+
+		Map<Integer, Action> gaction = gameState.gAction;
+		Action action = gaction.get(fkey);
+
+		String str = action.toString();
+		if (goal.y < start.y && str.contains("NORTH")) {
+			utility += 500;
+		}
+		if (goal.x > start.x && str.contains("EAST")) {
+			utility += 500;
+		}
+		if (goal.y > start.y && str.contains("SOUTH")) {
+			utility += 500;
+		}
+		if (goal.x < start.x && str.contains("WEST")) {
+			utility += 500;
+		}
+
+		return utility;
+	}
+
+	private MapLocation getClosestFootman(MapLocation archer) {
+
+		Map<Integer, MapLocation> footmen = gameState.footmenLocation;
+
+		int min = Integer.MAX_VALUE;
+		int bestKey = -1;
+		for (Integer key : footmen.keySet()) {
+			AStarSearch aStar = new AStarSearch();
+			Stack<MapLocation> path = aStar.AstarSearch(footmen.get(key), archer, xExtent, yExtent, null,
+					getResources());
+			if (path.size() < min) {
+				min = path.size();
+				bestKey = key;
+			}
+		}
+
+		return footmen.get(bestKey);
 	}
 
 	private double cornerEnemyUtility() {
 
 		double cornerUtility = 0.0;
+
+		// double blockUtil = blockUtility();
+		// if (blockUtil > 0) {
+		// cornerUtility += blockUtil;
+		// return cornerUtility;
+		// }
 
 		List<MapLocation> corners = getCorners();
 		List<MapLocation> originalFLoc = getOriginalLocList(gameState.gAction);
@@ -155,7 +266,7 @@ public class HeuristicUtility {
 			minSize = steps;
 			bestLocs.put(id, bestLoc);
 
-			if (minSize < 3) {
+			if (minSize < 1) {
 				MinimaxAlphaBeta.f1Cornered = true;
 			}
 		}
@@ -313,31 +424,6 @@ public class HeuristicUtility {
 
 		return c;
 	}
-
-	// private double hpUtility() {
-	//
-	// double hpUtility = 0;
-	// double fFullHp = 160;
-	// double aFullHp = 50;
-	//
-	// if (MinimaxAlphaBeta.isMaxTurn) {
-	// if (gameState.footmenID.size() < 2) {
-	// hpUtility -= 10000;
-	// }
-	// }
-	//
-	// double footmen = 0.0;
-	// for (Integer key : gameState.footmenHP.keySet()) {
-	// footmen += fFullHp - gameState.footmenHP.get(key);
-	// }
-	//
-	// double archers = 0.0;
-	// for (Integer key : gameState.archerHP.keySet()) {
-	// archers += aFullHp - gameState.archerHP.get(key);
-	// }
-	//
-	// return (archers - footmen);
-	// }
 
 	private Set<MapLocation> getResources() {
 

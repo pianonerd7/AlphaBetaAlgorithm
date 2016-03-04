@@ -79,53 +79,7 @@ public class MinimaxAlphaBeta extends Agent {
 	 *            to the root
 	 * @return The best child of this node with updated values
 	 */
-	List<GameStateChild> best = new ArrayList<GameStateChild>();
-
 	public GameStateChild alphaBetaSearch(GameStateChild node, int depth, double alpha, double beta) {
-
-		// isMaxTurn = !isMaxTurn;
-		//
-		// if (node.state.lifeExpectancy == Double.MIN_VALUE ||
-		// node.state.lifeExpectancy == Double.MAX_VALUE
-		// || depth == 0) {
-		// return node;
-		// }
-		//
-		// List<GameStateChild> children =
-		// orderChildrenWithHeuristics(node.state.getChildren());
-		//
-		// if (isMaxTurn) {
-		// for (GameStateChild child : children) {
-		//
-		// child.state.utility += alphaBetaSearch(child, depth - 1, alpha,
-		// beta).state.getUtility();
-		//
-		// if (child.state.getUtility() < alpha) {
-		// return child;
-		// } else if (child.state.getUtility() < beta) {
-		// beta = child.state.getUtility();
-		// }
-		// }
-		// } else {
-		// for (GameStateChild child : children) {
-		//
-		// GameStateChild state = alphaBetaSearch(child, depth - 1, alpha,
-		// beta);
-		// child.state.utility += state.state.getUtility();
-		//
-		// if (child.state.getUtility() > beta) {
-		// return child;
-		// } else if (child.state.getUtility() > alpha) {
-		// alpha = child.state.getUtility();
-		// }
-		// }
-		// }
-		//
-		// if (isMaxTurn) {
-		// print(children.get(0));
-		// }
-		// return children.get(0);
-		// }
 
 		isMaxTurn = !isMaxTurn;
 
@@ -135,6 +89,7 @@ public class MinimaxAlphaBeta extends Agent {
 		}
 
 		GameStateChild bestNode = null;
+		GameStateChild bestCurrentNode = null;
 		double val;
 		List<GameStateChild> children = orderChildrenWithHeuristics(node.state.getChildren());
 
@@ -146,6 +101,8 @@ public class MinimaxAlphaBeta extends Agent {
 				if (child.state.getUtility() > val) {
 					val = child.state.getUtility();
 					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
+					bestCurrentNode = child;
+					bestCurrentNode.state.utility = bestNode.state.utility;
 				}
 
 				alpha = Math.max(alpha, val);
@@ -162,6 +119,8 @@ public class MinimaxAlphaBeta extends Agent {
 				if (child.state.getUtility() < val) {
 					val = child.state.getUtility();
 					bestNode = alphaBetaSearch(child, depth - 1, alpha, beta);
+					bestCurrentNode = child;
+					bestCurrentNode.state.utility = bestNode.state.utility;
 				}
 
 				beta = Math.min(beta, val);
@@ -171,8 +130,11 @@ public class MinimaxAlphaBeta extends Agent {
 				}
 			}
 		}
-		print(bestNode);
-		return bestNode;
+
+		if (isMaxTurn) {
+			print(bestCurrentNode);
+		}
+		return bestCurrentNode;
 	}
 
 	private void print(GameStateChild bestNode) {
