@@ -430,7 +430,7 @@ public class GameState {
 				if (MinimaxAlphaBeta.isMaxTurn && newArcherHP.size() != 0) {
 					hp = newArcherHP.get(enemyId);
 					hp = hp - footmenAttackPt;
-					newUtility += footmenAttackPt + 1000;
+					newUtility += footmenAttackPt + 2000;
 
 					if (hp < 1) {
 						newArcherLocation.remove(enemyId);
@@ -454,7 +454,7 @@ public class GameState {
 																						// footman
 					hp = newFootmenHP.get(enemyId);
 					hp = hp - archerAttackPt;
-					newUtility -= archerAttackPt + 1000;
+					newUtility -= archerAttackPt + 2000;
 
 					if (hp < 1) {
 						newFootmenLocation.remove(enemyId);

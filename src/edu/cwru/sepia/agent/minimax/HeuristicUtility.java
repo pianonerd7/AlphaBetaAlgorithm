@@ -70,39 +70,11 @@ public class HeuristicUtility {
 
 				int bestKey = getClosestFootman(list.get(0));
 				MapLocation bestFootman = gameState.footmenLocation.get(bestKey);
-				blockUtil += isMovingTowards(bestFootman, list.get(0), bestKey);
-
+				blockUtil += aStarSearch(bestFootman, list.get(0), bestKey, gameState.archerID.get(0), false);
 			}
 		}
 
 		return blockUtil;
-	}
-
-	private double isMovingTowards(MapLocation start, MapLocation goal, int fkey) {
-
-		double utility = 0;
-
-		if (start == null || goal == null) {
-			return utility;
-		}
-
-		AStarSearch aStar = new AStarSearch();
-		Stack<MapLocation> path = aStar.AstarSearch(start, goal, xExtent, yExtent, null, getResources());
-
-		if (path.isEmpty()) {
-			return 0;
-		}
-
-		MapLocation nextLocation = path.pop();
-
-		Map<Integer, Action> gaction = gameState.gAction;
-		// Action action = gaction.get(fkey);
-
-		if (nextLocation.x == start.x && nextLocation.y == start.y) {
-			utility = 500;
-		}
-
-		return utility;
 	}
 
 	private int getClosestFootman(MapLocation archer) {
@@ -317,20 +289,20 @@ public class HeuristicUtility {
 			}
 
 			// distUtility += tempBest;
-			distUtility += aStarSearch(footman1, gameState.archerLocation.get(index), gameState.footmenID.get(0),
-					index);
+			distUtility += aStarSearch(footman1, gameState.archerLocation.get(index), gameState.footmenID.get(0), index,
+					true);
 
 			for (Integer key : gameState.archerLocation.keySet()) {
 
 				if (key != index) {
 					distUtility += aStarSearch(gameState.footmenLocation.get(gameState.footmenID.get(1)),
-							gameState.archerLocation.get(key), gameState.footmenID.get(1), key);
+							gameState.archerLocation.get(key), gameState.footmenID.get(1), key, true);
 				}
 			}
 
 		} else if (numFootmen == 2 && numArchers == 1) {
-			MapLocation footman1 = gameState.footmenLocation.get(gameState.footmenID.get(0));
-			MapLocation footman2 = gameState.footmenLocation.get(gameState.footmenID.get(1));
+			MapLocation footman1 = gameState.footmenLocation.get(gameState.footmenID.get(1));
+			MapLocation footman2 = gameState.footmenLocation.get(gameState.footmenID.get(0));
 			MapLocation archer = null;
 			int index = -1;
 
@@ -344,8 +316,8 @@ public class HeuristicUtility {
 				}
 			}
 
-			distUtility += aStarSearch(footman1, archer, gameState.footmenID.get(0), index);
-			distUtility += aStarSearch(footman2, archer, gameState.footmenID.get(1), index);
+			distUtility += aStarSearch(footman1, archer, gameState.footmenID.get(1), index, true);
+			distUtility += aStarSearch(footman2, footman1, gameState.footmenID.get(0), index, true);
 
 		} else if (numFootmen == 1 && numArchers == 2) {
 			MapLocation archer1 = gameState.archerLocation.get(gameState.archerID.get(0));
@@ -363,8 +335,8 @@ public class HeuristicUtility {
 				}
 			}
 
-			distUtility += aStarSearch(footman, archer1, index, gameState.archerID.get(0));
-			distUtility += aStarSearch(footman, archer2, index, gameState.archerID.get(1));
+			distUtility += aStarSearch(footman, archer1, index, gameState.archerID.get(0), true);
+			distUtility += aStarSearch(footman, archer2, index, gameState.archerID.get(1), true);
 
 		} else if (numFootmen == 1 && numArchers == 1) {
 			MapLocation footman = null;
@@ -392,7 +364,7 @@ public class HeuristicUtility {
 				}
 			}
 
-			distUtility += aStarSearch(footman, archer, fIndex, aIndex);
+			distUtility += aStarSearch(footman, archer, fIndex, aIndex, true);
 		}
 
 		return distUtility;
@@ -425,7 +397,7 @@ public class HeuristicUtility {
 		return resourceLocations;
 	}
 
-	private double aStarSearch(MapLocation start, MapLocation goal, int footmanKey, int archerKey) {
+	private double aStarSearch(MapLocation start, MapLocation goal, int footmanKey, int archerKey, boolean toCorner) {
 
 		double aStarUtility = 0.0;
 
@@ -453,7 +425,7 @@ public class HeuristicUtility {
 		}
 
 		// stop chasing the archer, corner them and finish them!
-		if (path.size() <= 1) {
+		if (path.size() <= 1 && toCorner) {
 			aStarUtility += cornerEnemyUtility();
 			return aStarUtility;
 		}
