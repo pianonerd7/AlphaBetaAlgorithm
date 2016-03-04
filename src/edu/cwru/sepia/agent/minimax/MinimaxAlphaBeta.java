@@ -131,25 +131,7 @@ public class MinimaxAlphaBeta extends Agent {
 			}
 		}
 
-		if (isMaxTurn) {
-			print(bestCurrentNode);
-		}
 		return bestCurrentNode;
-	}
-
-	private void print(GameStateChild bestNode) {
-		for (Integer key : bestNode.state.footmenLocation.keySet()) {
-			System.out.println("f maplocation: " + bestNode.state.footmenLocation.get(key).toString());
-		}
-
-		for (Integer key : bestNode.state.archerLocation.keySet()) {
-			System.out.println("a maplocation: " + bestNode.state.archerLocation.get(key).toString());
-		}
-
-		for (Integer key : bestNode.action.keySet()) {
-			System.out.println("action: " + bestNode.action.get(key).toString());
-		}
-		System.out.println("\n\n");
 	}
 
 	/**

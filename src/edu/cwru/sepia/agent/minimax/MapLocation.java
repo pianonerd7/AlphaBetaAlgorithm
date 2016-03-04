@@ -1,5 +1,9 @@
 package edu.cwru.sepia.agent.minimax;
 
+/**
+ * MapLocation stores the coordinate points of resources, archers, and the
+ * footmen.
+ */
 class MapLocation implements Comparable<MapLocation> {
 	public int x;
 	public int y;

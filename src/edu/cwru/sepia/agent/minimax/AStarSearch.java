@@ -6,13 +6,28 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+/**
+ * Used the AStarSearch algorithm to estimate a path to the goal, this is
+ * especially useful on a map with resources because just taking the difference
+ * between two MapLocations doesn't account for resources, but AStarSearch does.
+ */
 public class AStarSearch {
 
+	/**
+	 * Computes a path from the start to the goal by using a heuristic to
+	 * estimate and expand favorable nodes
+	 * 
+	 * @param start
+	 * @param goal
+	 * @param xExtent
+	 * @param yExtent
+	 * @param enemyFootmanLoc
+	 * @param resourceLocations
+	 * @return
+	 */
 	public Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent,
 			MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations) {
 
-		// PriorityQueue<MapLocation> openList = new
-		// PriorityQueue<MapLocation>();
 		ArrayList<MapLocation> openList = new ArrayList<MapLocation>();
 		ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
 
@@ -50,6 +65,14 @@ public class AStarSearch {
 		return null;
 	}
 
+	/**
+	 * Tests to see if this neighbor can be added to the openlist
+	 * 
+	 * @param neighbor
+	 * @param openList
+	 * @param closedList
+	 * @return
+	 */
 	private boolean canAddToOpenList(MapLocation neighbor, ArrayList<MapLocation> openList,
 			ArrayList<MapLocation> closedList) {
 
@@ -72,10 +95,25 @@ public class AStarSearch {
 
 	}
 
+	/**
+	 * Function to get heuristic
+	 * 
+	 * @param current
+	 * @param goal
+	 * @return
+	 */
 	private double getHeuristic(MapLocation current, MapLocation goal) {
 		return Math.max(Math.abs(current.x - goal.x), Math.abs(current.y - goal.y));
 	}
 
+	/**
+	 * Starts from the goal location, and backtracks until it finds the start
+	 * and returns the full path
+	 * 
+	 * @param goal
+	 * @param start
+	 * @return
+	 */
 	private Stack<MapLocation> returnPath(MapLocation goal, MapLocation start) {
 		Stack<MapLocation> path = new Stack<MapLocation>();
 
@@ -95,6 +133,16 @@ public class AStarSearch {
 		return path;
 	}
 
+	/**
+	 * Gets all the possible neighbors of a coordinate, excluding diagonals
+	 * 
+	 * @param current
+	 * @param resourceLocations
+	 * @param enemyFootmanLoc
+	 * @param xExtent
+	 * @param yExtent
+	 * @return
+	 */
 	private List<MapLocation> getNeighbors(MapLocation current, Set<MapLocation> resourceLocations,
 			MapLocation enemyFootmanLoc, int xExtent, int yExtent) {
 
@@ -103,14 +151,10 @@ public class AStarSearch {
 		int x = current.x;
 		int y = current.y;
 
-		// neighbors.add(new MapLocation(x - 1, y - 1, current, 1));
 		neighbors.add(new MapLocation(x, y - 1, current, 1));
-		// neighbors.add(new MapLocation(x + 1, y - 1, current, 1));
 		neighbors.add(new MapLocation(x - 1, y, current, 1));
 		neighbors.add(new MapLocation(x + 1, y, current, 1));
-		// neighbors.add(new MapLocation(x - 1, y + 1, current, 1));
 		neighbors.add(new MapLocation(x, y + 1, current, 1));
-		// neighbors.add(new MapLocation(x + 1, y + 1, current, 1));
 
 		for (MapLocation potentialNeighbor : new ArrayList<MapLocation>(neighbors)) {
 			deleted = false;
